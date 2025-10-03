@@ -1,0 +1,97 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Carrito | Dulce Arte{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'core/css/carrito.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<section class="cart-wrap">
+  <div class="container cart-surface">
+    <!-- 🛒 Título -->
+    <h1 class="cart-title text-center">🧁 Carro de Compras</h1>
+
+    <div class="cart-grid">
+      <!-- 🧺 Lista de productos -->
+      <div class="cart-list">
+        {% for it in items %}
+        <article class="cart-item">
+          <!-- Imagen -->
+          <div class="ci-media">
+            <img src="{{ it.producto.imagen.url }}" alt="{{ it.producto.nombre }}">
+          </div>
+
+          <!-- Nombre y precio -->
+          <div class="ci-info">
+            <h3 class="ci-name">{{ it.producto.nombre }}</h3>
+            <div class="ci-price">CLP {{ it.producto.precio|floatformat:0 }}</div>
+          </div>
+
+          <!-- Cantidad y acciones -->
+          <div class="ci-qty">
+            <form method="post" action="{% url 'modificar_cantidad' it.id 'restar' %}">
+              {% csrf_token %}
+              <button class="btn-qty minus" {% if it.cantidad <= 1 %}disabled{% endif %}>–</button>
+            </form>
+
+            <input class="qty-box" type="text" value="{{ it.cantidad }}" readonly>
+
+            <form method="post" action="{% url 'modificar_cantidad' it.id 'sumar' %}">
+              {% csrf_token %}
+              <button class="btn-qty plus" {% if it.cantidad >= it.producto.stock %}disabled{% endif %}>+</button>
+            </form>
+
+            <form method="post" action="{% url 'eliminar_item' it.id %}">
+              {% csrf_token %}
+              <button class="btn-trash" aria-label="Eliminar" title="Eliminar producto">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </div>
+        </article>
+        {% empty %}
+        <p class="empty text-center mt-4">🛍️ Tu carrito está vacío. <a href="{% url 'productos' %}">Explora nuestros productos</a></p>
+        {% endfor %}
+      </div>
+
+      <!-- 📊 Resumen del pedido -->
+      <aside class="cart-aside">
+        <div class="cart-summary">
+          <h2 class="fs-4 mb-3 text-center">Resumen del Pedido</h2>
+
+          <div class="row-line">
+            <span>Subtotal:</span>
+            <strong>CLP {{ subtotal|floatformat:0 }}</strong>
+          </div>
+
+          <div class="row-line">
+            <span>Descuento:</span>
+            <strong>-CLP {{ descuento|floatformat:0 }}</strong>
+          </div>
+
+          <div class="row-line total">
+            <span>Total:</span>
+            <strong>CLP {{ total|floatformat:0 }}</strong>
+          </div>
+
+          <div class="footer-bar mt-4 d-flex flex-column gap-3">
+            <a href="{% url 'checkout' %}" class="btn-cta text-center">
+              <i class="bi bi-bag-check me-2"></i> Finalizar Pedido
+            </a>
+
+            <form method="post" action="{% url 'vaciar_carrito' %}">
+              {% csrf_token %}
+              <button type="submit" class="btn-light w-100">
+                <i class="bi bi-trash3 me-2"></i> Vaciar Carrito
+              </button>
+            </form>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}

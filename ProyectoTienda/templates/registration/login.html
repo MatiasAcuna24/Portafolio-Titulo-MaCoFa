@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'core/css/login.css' %}">
+  <title>Iniciar sesión | Dulce Arte</title>
+</head>
+<body>
+  <div class="login-wrap">
+
+    <div class="logo">
+      <!-- Ícono candado (pon tu archivo en static/img/lock.png) -->
+      <img src="{% static 'core/img/login/login.png' %}" alt="Candado" class="logo-img">
+      <h1 class="brand">Dulce Arte</h1>
+    </div>
+
+    <h2 class="headline">
+      Qué alegría verte de<br>
+      nuevo en Dulce Arte
+    </h2>
+
+    <!-- Mensajes de error -->
+    {% if form.errors or error %}
+      <div class="alert">
+        {% if error %}{{ error }}{% else %}Revisa tu correo y contraseña.{% endif %}
+      </div>
+    {% endif %}
+
+    <form method="post" class="form">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Nombre de usuario" required>
+      <input type="password" name="password" placeholder="Contraseña" required>
+      <button type="submit" class="btn">Iniciar sesión</button>
+    </form>
+
+    <p class="hint">
+      ¿No tienes una cuenta?
+      <a href="{% url 'registro' %}">Registrate</a>
+    </p>
+    <p class="hint">
+      <a href="{% url 'index' %}">Volver al inicio</a>
+    </p>
+  </div>
+</body>
+</html>
+

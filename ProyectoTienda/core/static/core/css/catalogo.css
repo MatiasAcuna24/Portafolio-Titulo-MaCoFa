@@ -1,0 +1,173 @@
+/* Paleta */
+:root{
+  --bg: #fbf4e6;          /* crema */
+  --panel: #ffe6d7;       /* rosa durazno claro (cinta superior) */
+  --text: #4b2c20;        /* café */
+  --border: #5a3730;      /* borde oscuro */
+  --btn: #ff8856;         /* botón naranja */
+  --btn-2: #ffb07a;       /* degradado botón claro */
+}
+
+.catalogo{
+  background: var(--bg);
+  padding: 1.5rem 0 3rem;
+}
+
+/* Head (barra dentro del panel) */
+.cat-head{
+  background: var(--panel);
+  border: 3px solid var(--border);
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  padding: .8rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-text{
+  font-family: 'Baloo 2', cursive;
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--text);
+}
+
+.cat-nav a{
+  font-family: 'Baloo 2', cursive;
+  color: var(--text);
+  text-decoration: none;
+  margin-left: 1.25rem;
+  position: relative;
+}
+.cat-nav a.active{ text-decoration: underline; }
+
+.cart-link{
+  display: inline-flex; align-items: center; gap:.25rem;
+  font-size: 1.2rem;
+}
+.cart-link .badge{
+  position: absolute;
+  top: -10px; right: -12px;
+  background: #ff6a4a;
+  color: #fff;
+  border-radius: 999px;
+  font-size: .75rem;
+  padding: 0 .38rem;
+  line-height: 1.1rem;
+  border: 2px solid var(--panel);
+}
+
+/* Título principal */
+.cat-title{
+  text-align: center;
+  font-family: 'Baloo 2', cursive;
+  color: var(--text);
+  font-weight: 800;
+  font-size: 2.4rem;
+  margin: 1.2rem auto 1.6rem;
+}
+
+/* Grid de tarjetas */
+.cat-grid{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.4rem 1.2rem;
+}
+
+@media (max-width: 768px){
+  .cat-grid{ grid-template-columns: 1fr; }
+}
+
+/* Tarjeta de producto */
+.prod-card{
+  background: #fffdfa;
+  border: 4px solid var(--border);
+  border-radius: 18px;
+  padding: .8rem;
+}
+
+.prod-inner{
+  display: grid;
+  grid-template-columns: 150px auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.prod-media img{
+  width: 140px; height: auto; display: block;
+}
+
+.prod-name{
+  font-family: 'Baloo 2', cursive;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin: 0 0 .25rem 0;
+}
+
+.prod-price{
+  color: var(--text);
+  font-size: 1.25rem;
+  margin-bottom: .6rem;
+}
+
+/* Botón añadir */
+.btn-add{
+  border: none;
+  border-radius: 14px;
+  padding: .55rem 1.2rem;
+  font-family: 'Baloo 2', cursive;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: #fff;
+  background: linear-gradient(180deg, var(--btn-2), var(--btn));
+  box-shadow: 0 6px 12px rgba(0,0,0,.08);
+  cursor: pointer;
+  transition: transform .08s ease, filter .2s ease;
+}
+.btn-add:active{ transform: translateY(1px); }
+.btn-add:hover{ filter: brightness(1.03); }
+
+/* Marco general (parecido al mockup) */
+.catalogo .container{
+  border: 3px solid var(--border);
+  border-radius: 0 0 18px 18px;
+  padding: 0 1rem 1.2rem;
+  background: #fff6eb;
+}
+
+/* Paginación */
+.cat-pagination{
+  margin-top: 1.2rem; text-align:center;
+}
+.pg{
+  display: inline-block;
+  margin: 0 .25rem;
+  padding: .35rem .7rem;
+  border-radius: 10px;
+  background: #ffe8d5;
+  color: var(--text);
+  text-decoration: none;
+}
+.pg.current{ background: #ffdaba; font-weight:700; }
+
+.btn-add.delete {
+  background-color: #d9534f;
+}
+
+.btn-add.delete:hover {
+  background-color: #c9302c;
+}
+
+.prod-body .btn-add {
+  display: inline-block;
+  text-align: center;
+  font-weight: 600;
+  border-radius: 2rem;
+  padding: 0.7rem 1rem;
+  font-size: 1.1rem;
+}
+
+.prod-body .btn-add i {
+  margin-right: 0.3rem;
+}

@@ -1,0 +1,39 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+  <h2 style="margin-top:0;">🧁 ¡Gracias por tu compra, {{ user.first_name|default:user.username }}!</h2>
+  <p>Hemos recibido tu pedido <strong>{{ pedido.numero }}</strong> correctamente.</p>
+
+  <h3 style="margin-top:24px;">📦 Resumen del Pedido</h3>
+  <table style="width:100%;border-collapse:collapse;margin-top:8px;">
+    <thead>
+      <tr>
+        <th style="text-align:left;padding:8px;border-bottom:1px solid #ddd;">Producto</th>
+        <th style="text-align:center;padding:8px;border-bottom:1px solid #ddd;">Cantidad</th>
+        <th style="text-align:right;padding:8px;border-bottom:1px solid #ddd;">Precio</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for it in items %}
+      <tr>
+        <td style="padding:8px;">{{ it.producto.nombre }}</td>
+        <td style="text-align:center;padding:8px;">{{ it.cantidad }}</td>
+        <td style="text-align:right;padding:8px;">CLP {{ it.precio_unitario|floatformat:0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="margin-top:20px;">
+    <p><strong>Subtotal:</strong> CLP {{ pedido.subtotal|floatformat:0 }}</p>
+    <p><strong>Despacho ({{ pedido.zona.nombre }}):</strong> CLP {{ pedido.zona.costo|floatformat:0 }}</p>
+    {% if pedido.descuento %}
+    <p><strong>Descuento:</strong> -CLP {{ pedido.descuento|floatformat:0 }}</p>
+    {% endif %}
+    <p style="font-size:18px;font-weight:bold;">💰 Total: CLP {{ pedido.total|floatformat:0 }}</p>
+  </div>
+
+  <h3 style="margin-top:24px;">📍 Dirección de Envío</h3>
+  <p>{{ pedido.direccion_envio.calle }} {{ pedido.direccion_envio.numero }}, {{ pedido.direccion_envio.comuna }}, {{ pedido.direccion_envio.ciudad }}, {{ pedido.direccion_envio.region }}</p>
+
+  <p style="margin-top:24px;">Te notificaremos cuando tu pedido cambie de estado 🍰</p>
+{% endblock %}

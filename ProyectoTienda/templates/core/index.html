@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Inicio | Dulce Arte{% endblock %}
+
+{% block content %}
+<header class="hero">
+  <div class="container text-center">
+    <!-- Título principal -->
+    <h1 class="mb-3">
+      Deliciosos pasteles para&nbsp;<span style="white-space:nowrap;">ti</span>
+    </h1>
+
+    <!-- Botón CTA -->
+    <div class="lead-cta">
+      <a href="{% url 'productos' %}" class="btn btn-cta btn-lg">Ver catálogo</a>
+    </div>
+
+    <!-- Ilustraciones -->
+    <div class="pastry-wrap d-flex justify-content-center align-items-end gap-4 gap-md-5 flex-wrap">
+      <!-- Cupcake -->
+      <img src="{% static 'core/img/carrusel1.png' %}" alt="Cupcake feliz" class="pastry">
+      <!-- Porción de pastel -->
+      <img src="{% static 'core/img/carrusel2.png' %}" alt="Porción de pastel feliz" class="pastry">
+      <!-- Donut -->
+      <img src="{% static 'core/img/carrusel3.png' %}" alt="Donut feliz" class="pastry">
+    </div>
+  </div>
+
+  <!-- Curva inferior -->
+  <div class="floor"></div>
+</header>
+{% endblock %}

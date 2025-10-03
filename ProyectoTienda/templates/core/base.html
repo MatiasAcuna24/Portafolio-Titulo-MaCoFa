@@ -1,0 +1,138 @@
+{% load static %}
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Dulce Arte{% endblock %}</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- CSS externo -->
+  <link href="{% static 'core/css/styles.css' %}" rel="stylesheet">
+
+  {% block css %}{% endblock %}
+</head>
+<body>
+
+  <!-- NAVBAR -->
+   {% if user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg">
+    <div class="container">
+    
+        <img src="{% static 'core/img/logo.png' %}" alt="Logo" width="250" height="250" class="me-2">
+        
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="nav">
+        <ul class="navbar-nav gap-lg-4">
+          <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'productos' %}">Productos</a></li>
+
+          {% if user.is_staff %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'perfil_admin' %}">Perfil Administrativo</a></li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'perfil_usuario' %}">Mi Perfil</a></li>
+          {% endif %}
+
+          <a href="{% url 'ver_carrito' %}" class="btn btn-cta btn-lg">Carro de Compras</a>
+          <a href="{% url 'logout' %}" class="btn btn-cta btn-lg">Cerrar Sesion</a>
+        </ul>
+      </div>
+    </div>
+  </nav>
+   {% else %}
+    <nav class="navbar navbar-expand-lg">
+    <div class="container">
+    
+        <img src="{% static 'core/img/logo.png' %}" alt="Logo" width="250" height="250" class="me-2">
+        
+      <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="nav">
+        <ul class="navbar-nav gap-lg-4">
+          <li class="nav-item"><a class="nav-link" href="#">Inicio</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'productos' %}">Productos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Contacto</a></li>
+          <a href="{% url 'registro' %}" class="btn btn-cta btn-lg">Registrarse</a>
+          <a href="{% url 'login' %}" class="btn btn-cta btn-lg">Iniciar Sesion</a>
+        </ul>
+      </div>
+    </div>
+  </nav>
+   {% endif %}
+  
+  <!-- CONTENIDO PRINCIPAL -->
+  <main>
+    {% block content %}
+    {% endblock %}
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="text-white mt-auto py-4" style="background-color: #3b2f2f;">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <h5 class="text-uppercase"><img src="{% static 'core/img/logo.png' %}" alt="Logo" height="150" width="150"></h5>
+          <p>Pasteles únicos, sabores inolvidables. Hechos con amor y pasión por la repostería.</p>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <h5 class="text-uppercase">Enlaces</h5>
+          <ul class="list-unstyled">
+            <li><a href="#" class="text-white text-decoration-none">Inicio</a></li>
+            <li><a href="#" class="text-white text-decoration-none">Productos</a></li>
+            <li><a href="#" class="text-white text-decoration-none">Contacto</a></li>
+            <li><a href="#" class="text-white text-decoration-none">Preguntas frecuentes</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-4 mb-3">
+          <h5 class="text-uppercase">Síguenos</h5>
+          <a href="#" class="text-white me-2" aria-label="Facebook">
+            <i class="bi bi-facebook fs-2" aria-hidden="true"></i>
+          </a>
+          <a href="https://www.instagram.com/juanito_scooking/" class="text-white me-2" aria-label="Instagram">
+            <i class="bi bi-instagram fs-2" aria-hidden="true"></i>
+          </a>
+          <a href="#" class="text-white" aria-label="Whatsapp">
+            <i class="bi bi-whatsapp fs-2" aria-hidden="true"></i>
+          </a>
+        </div>
+
+        <div class="text-center mt-3">
+          <small>&copy; 2025 Dulce Arte. Todos los derechos reservados.</small>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JS Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'core/js/mensajes.js' %}"></script>
+
+<!-- SweetAlert2 con mensajes Django -->
+{% if messages %}
+  {% for m in messages %}
+    <script>
+      Swal.fire({
+        title: "{{ m.tags|capfirst }}",
+        text: "{{ m }}",
+        icon: "{{ m.tags }}"
+      });
+    </script>
+  {% endfor %}
+{% endif %}
+</body>
+</html>
+
+

@@ -1,0 +1,59 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Notas de personalización #{{ pedido.numero }} | Dulce Arte{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'core/css/checkout.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="checkout-wrap py-5">
+  <div class="container" style="max-width: 820px;">
+    <h1 class="mb-4">🎨 Personaliza tu pedido #{{ pedido.numero }}</h1>
+
+    <div class="card shadow-sm border-0 rounded-4">
+      <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data" class="row g-3">
+          {% csrf_token %}
+
+          <div class="col-12">
+            <label class="form-label">Descripción / Detalle</label>
+            {{ form.descripcion }}
+            <small class="text-muted d-block">Temática, colores, alergias, ideas clave, etc.</small>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Mensaje en la torta (opcional)</label>
+            {{ form.mensaje_en_torta }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Color predominante (opcional)</label>
+            {{ form.color_predominante }}
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Fecha del evento (opcional)</label>
+            {{ form.fecha_evento }}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Archivo / Imagen de referencia (opcional)</label>
+            {{ form.archivo_referencia }}
+            {% if personalizado.archivo_referencia %}
+              <div class="mt-2">
+                <a href="{{ personalizado.archivo_referencia.url }}" target="_blank" class="link-primary">Ver archivo cargado</a>
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="col-12 d-flex justify-content-between mt-3">
+            <a href="{% url 'detalle_pedido' pedido.id %}" class="btn btn-light">Volver al pedido</a>
+            <button class="btn btn-cta" type="submit">Guardar notas</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

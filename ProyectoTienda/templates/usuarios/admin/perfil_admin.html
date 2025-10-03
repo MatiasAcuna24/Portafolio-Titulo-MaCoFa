@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Perfil Administrativo | Dulce Arte{% endblock %}
+
+{% block content %}
+<section class="admin-dashboard py-5">
+  <div class="container">
+    <h1 class="text-center mb-5">⚙️ Panel Administrativo</h1>
+
+    <div class="row g-4">
+      <!-- Productos -->
+      <div class="col-md-4">
+        <a href="{% url 'productos' %}" class="card shadow-sm text-center p-4 admin-card">
+          <h3>📦 Gestionar Productos</h3>
+        </a>
+      </div>
+
+      <!-- Pedidos -->
+      <div class="col-md-4">
+        <a href="{% url 'ver_pedidos' %}" class="card shadow-sm text-center p-4 admin-card">
+          <h3>🧾 Gestionar Pedidos</h3>
+        </a>
+      </div>
+
+      <!-- Usuarios -->
+      <div class="col-md-4">
+        <a href="{% url 'listar_usuarios' %}" class="card shadow-sm text-center p-4 admin-card">
+          <h3>👤 Gestionar Usuarios</h3>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

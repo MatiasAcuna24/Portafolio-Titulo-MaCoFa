@@ -1,0 +1,109 @@
+/* FUENTES Y RESET */
+body {
+  font-family: 'Baloo 2', cursive;
+  background-color: #fff8e6;
+  color: #4b2c20;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+/* NAVBAR */
+.navbar {
+  background-color: #fff8e6;
+  font-weight: 600;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  color: #4b2c20;
+}
+
+.navbar-brand:hover {
+  color: #e07b2e;
+  text-decoration: none;
+}
+
+.nav-link {
+  color: #4b2c20 !important;
+  font-size: 1.1rem;
+}
+
+.nav-link:hover {
+  color: #ff9a3c !important;
+}
+
+/* HERO HEADER */
+.hero {
+  background-color: #fff8e6;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+  position: relative;
+  text-align: center;
+}
+
+.hero h1 {
+  font-size: 2.75rem;
+  font-weight: 700;
+  color: #4b2c20;
+}
+
+/* BOTÓN PRINCIPAL */
+.btn-cta {
+  background-color: #a4d04f;
+  color: #4b2c20;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-cta:hover {
+  background-color: #8ac244;
+  color: #fff;
+}
+
+/* ILUSTRACIONES */
+.pastry-wrap {
+  margin-top: 2.5rem;
+}
+
+.pastry {
+  width: 140px;
+  height: auto;
+  transition: transform 0.3s ease;
+}
+
+
+.pastry:hover {
+  transform: scale(1.1);
+}
+
+/* CURVA INFERIOR */
+.floor {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 80px;
+  background: radial-gradient(ellipse at bottom, #ffeac2 60%, transparent 100%);
+}
+
+/* FOOTER */
+footer {
+  background-color: #fff8e6;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+footer h5 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}

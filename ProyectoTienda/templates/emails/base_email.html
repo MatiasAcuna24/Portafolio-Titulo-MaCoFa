@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="es">
+  <body style="font-family: Arial, sans-serif; background:#fff6ea; padding:24px; color:#4b2c20;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;margin:auto;background:#ffffff;border-radius:12px;padding:24px;">
+      <tr>
+        <td style="text-align:center;">
+          <h1 style="margin:0;color:#4b2c20;">Dulce Arte</h1>
+          <p style="margin:4px 0 16px;color:#8a6a5a;">Pastelería artesanal con amor</p>
+          <hr style="border:none;border-top:1px solid #ffe4d7;margin:16px 0">
+        </td>
+      </tr>
+      <tr>
+        <td>
+          {% block content %}{% endblock %}
+        </td>
+      </tr>
+      <tr>
+        <td style="text-align:center;">
+          <hr style="border:none;border-top:1px solid #ffe4d7;margin:16px 0 8px">
+          <small style="color:#8a6a5a;">© {{ year }} Dulce Arte — Este es un correo automático, no responder.</small>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

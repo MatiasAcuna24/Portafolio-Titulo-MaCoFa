@@ -1,0 +1,41 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Cambiar Contraseña | Dulce Arte{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'core/css/checkout.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<section class="checkout-wrap d-flex align-items-center justify-content-center min-vh-100 py-5">
+  <div class="container checkout-surface" style="max-width: 600px;">
+    
+    <div class="text-center mb-4">
+      <img src="{% static 'img/logo.png' %}" width="60" height="60" alt="Dulce Arte" class="mb-2">
+      <h1 class="fw-bold">Cambiar Contraseña</h1>
+      <p class="text-muted">🔐 Actualiza tu contraseña de forma segura</p>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ form.as_p }}
+
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'perfil_usuario' %}" class="btn btn-light">
+              <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-cta">
+              <i class="bi bi-shield-lock"></i> Cambiar Contraseña
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>📦 Actualización de tu Pedido | Dulce Arte</title>
+</head>
+<body style="background-color:#fff6ea; font-family:'Calibre','Calibri','Segoe UI',Arial,Helvetica,sans-serif; color:#4b2c20; padding:2rem;">
+
+  <!-- Encabezado -->
+  <table width="100%" style="text-align:center; margin-bottom:2rem; font-family:'Calibre','Calibri','Segoe UI',Arial,Helvetica,sans-serif;">
+    <tr>
+      <td>
+        <img src="https://i.imgur.com/zP6h9Yh.png" alt="Dulce Arte" width="80" height="80" style="margin-bottom: 10px;">
+        <h1 style="font-size:2rem; margin:0; font-family:inherit;">🍰 Dulce Arte</h1>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Contenido principal -->
+  <table width="100%" style="background-color:#fff; padding:2rem; border-radius:1rem; box-shadow:0 4px 12px rgba(0,0,0,0.08); font-family:'Calibre','Calibri','Segoe UI',Arial,Helvetica,sans-serif;">
+    <tr>
+      <td>
+        <h2 style="font-size:1.8rem; margin-bottom:1rem; font-family:inherit;">📦 ¡Tu pedido ha cambiado de estado!</h2>
+        <p style="font-size:1.2rem; font-family:inherit;">Hola <strong>{{ user.first_name|default:user.username }}</strong>,</p>
+        <p style="font-family:inherit;">Te informamos que tu pedido <strong>#{{ pedido.numero }}</strong> ha cambiado su estado a:</p>
+
+        <div style="background-color:#a4d04f; color:#fff; padding:0.8rem 1.2rem; border-radius:2rem; font-size:1.4rem; display:inline-block; margin:1rem 0; font-family:inherit;">
+          {{ estado|title }}
+        </div>
+
+        {% if mensaje_extra %}
+          <p style="font-style: italic; background-color:#f5f5f5; padding:1rem; border-radius:0.8rem; margin-bottom:1.5rem; font-family:inherit;">
+            📝 Mensaje del equipo: "{{ mensaje_extra }}"
+          </p>
+        {% endif %}
+
+        <h3 style="margin-top:2rem; font-size:1.5rem; font-family:inherit;">📋 Resumen del Pedido</h3>
+        <table width="100%" style="margin-top:1rem; font-size:1.1rem; font-family:'Calibre','Calibri','Segoe UI',Arial,Helvetica,sans-serif;">
+          <tr>
+            <td style="font-family:inherit;"><strong>Número:</strong></td>
+            <td style="font-family:inherit;">{{ pedido.numero }}</td>
+          </tr>
+          <tr>
+            <td style="font-family:inherit;"><strong>Total:</strong></td>
+            <td style="font-family:inherit;">CLP {{ pedido.total|floatformat:0 }}</td>
+          </tr>
+          <tr>
+            <td style="font-family:inherit;"><strong>Zona:</strong></td>
+            <td style="font-family:inherit;">{{ pedido.zona.nombre }} – CLP {{ pedido.costo_despacho|floatformat:0 }}</td>
+          </tr>
+          <tr>
+            <td style="font-family:inherit;"><strong>Fecha:</strong></td>
+            <td style="font-family:inherit;">{{ pedido.creado_en|date:"d/m/Y H:i" }}</td>
+          </tr>
+        </table>
+
+        <p style="margin-top:2rem; font-size:1.1rem; font-family:inherit;">
+          Puedes revisar el detalle completo en la sección <strong>“Mis pedidos”</strong> dentro de tu cuenta.
+        </p>
+
+        <p style="margin-top:2rem; font-size:1.2rem; font-weight:bold; font-family:inherit;">
+          🍰 ¡Gracias por preferir Dulce Arte!
+        </p>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Footer -->
+  <p style="text-align:center; font-size:0.9rem; color:#888; margin-top:2rem; font-family:'Calibre','Calibri','Segoe UI',Arial,Helvetica,sans-serif;">
+    Este correo fue enviado automáticamente por <strong>Dulce Arte</strong>. Por favor, no respondas a este mensaje.
+  </p>
+
+</body>
+</html>

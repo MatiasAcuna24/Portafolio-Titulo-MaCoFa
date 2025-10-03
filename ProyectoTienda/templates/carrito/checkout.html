@@ -1,0 +1,273 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Checkout | Dulce Arte{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'core/css/checkout.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+  /* Botón “pro” para notas */
+  .btn-notas {
+    display:flex; align-items:center; justify-content:center; gap:.5rem;
+    width:100%;
+    border:1px solid #e9ecef;
+    background: linear-gradient(180deg,#ffffff 0%, #f8f9fa 100%);
+    box-shadow: 0 1px 2px rgba(16,24,40,.04);
+    border-radius: .75rem;
+    padding: .9rem 1rem;
+    font-weight: 600;
+    color: #4b2c20;
+    transition: transform .06s ease, box-shadow .15s ease, border-color .15s ease;
+    text-decoration: none;
+  }
+  .btn-notas:hover { transform: translateY(-1px); border-color:#dee2e6; text-decoration:none; }
+  .btn-notas:active { transform: translateY(0); }
+  .btn-notas .bi { font-size: 1.1rem; }
+
+  .preview-notas {
+    background: #fff;
+    border: 1px dashed #e5e7eb;
+    border-radius: .75rem;
+    padding: .75rem .9rem;
+    color: #6c757d;
+    font-size: .95rem;
+  }
+  .badge-notas {
+    background:#a4d04f; color:#fff;
+    border-radius: 999px; padding:.25rem .6rem;
+    font-size: .8rem; font-weight:600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="checkout-wrap py-5">
+  <div class="container checkout-surface">
+    <h1 class="checkout-title text-center mb-5">🧁 Finalizar compra</h1>
+
+    <div class="row justify-content-center">
+      
+      <!-- 🏠 Formulario de dirección -->
+      <div class="col-lg-7 mb-4">
+        <div class="checkout-address">
+          <h2>📍 Dirección de envío</h2>
+          <form method="post" class="direccion-form" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {# Campo oculto que recibirá el JSON del modal #}
+            <input type="hidden" name="notas_personalizadas" id="hidden_notas_personalizadas">
+            {# (Opcional) archivo de referencia desde checkout #}
+            <input type="file" name="archivo_personalizado" id="archivo_personalizado" class="d-none">
+
+            <div class="mb-3">
+              <label for="calle" class="form-label">Calle *</label>
+              <input type="text" class="form-control" id="calle" name="calle" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="numero" class="form-label">Número</label>
+              <input type="text" class="form-control" id="numero" name="numero">
+            </div>
+
+            <div class="mb-3">
+              <label for="comuna" class="form-label">Comuna *</label>
+              <input type="text" class="form-control" id="comuna" name="comuna" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="ciudad" class="form-label">Ciudad *</label>
+              <input type="text" class="form-control" id="ciudad" name="ciudad" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="region" class="form-label">Región *</label>
+              <input type="text" class="form-control" id="region" name="region" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="referencia" class="form-label">Referencia (opcional)</label>
+              <textarea class="form-control" id="referencia" name="referencia" rows="2"></textarea>
+            </div>
+
+            <div class="mb-4">
+              <label for="zona" class="form-label">Zona de despacho *</label>
+              <select class="form-select" id="zona" name="zona" required>
+                <option value="">-- Selecciona una zona --</option>
+                {% for z in zonas %}
+                  <option value="{{ z.id }}" {% if zona_seleccionada and zona_seleccionada.id == z.id %}selected{% endif %}>
+                    {{ z.nombre }} – CLP {{ z.costo|floatformat:0 }} – {{ z.tiempo_estimado_horas }}h
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <div class="text-center">
+              <button type="submit" class="btn-cta btn-lg w-100">
+                <i class="bi bi-check2-circle"></i> Confirmar pedido
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- 📦 Resumen del pedido -->
+      <div class="col-lg-5">
+        <div class="checkout-details">
+          <h2>🧁 Resumen del pedido</h2>
+
+          <ul class="product-list mb-4">
+            {% for item in items %}
+              <li class="checkout-item d-flex justify-content-between">
+                <span>{{ item.producto.nombre }} (x{{ item.cantidad }})</span>
+                <strong>CLP {{ item.producto.precio|floatformat:0 }}</strong>
+              </li>
+            {% endfor %}
+          </ul>
+
+          <div class="totals">
+            <p><span>Subtotal:</span> <strong>CLP {{ subtotal|floatformat:0 }}</strong></p>
+            <p><span>Descuento:</span> <strong>CLP {{ descuento|floatformat:0 }}</strong></p>
+
+            {% if costo_despacho > 0 %}
+            <p><span>Despacho ({{ zona_seleccionada.nombre }}):</span> <strong>CLP {{ costo_despacho|floatformat:0 }}</strong></p>
+            {% else %}
+            <p><span>Despacho:</span> <strong>Selecciona una zona</strong></p>
+            {% endif %}
+
+            <p class="fs-5 fw-bold"><span>Total:</span> <strong>CLP {{ total|floatformat:0 }}</strong></p>
+          </div>
+
+          <hr class="my-3">
+
+          {# 🎨 Sección de Personalización dentro del resumen #}
+          <div class="mb-2 d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <i class="bi bi-brush"></i>
+              <strong>Personalización</strong>
+            </div>
+            <span id="badgeNotas" class="badge-notas d-none">Notas agregadas</span>
+          </div>
+
+          <div id="previewNotas" class="preview-notas mb-3 d-none"></div>
+
+          <a href="#" class="btn-notas" data-bs-toggle="modal" data-bs-target="#modalNotas" id="btnAbrirNotas">
+            <i class="bi bi-pencil-square"></i>
+            <span>Agregar / editar notas de personalización</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+{# Modal de notas de personalización #}
+<div class="modal fade" id="modalNotas" tabindex="-1" aria-labelledby="modalNotasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalNotasLabel">🎨 Notas de personalización</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label">Descripción / Detalle</label>
+          <textarea class="form-control" id="modal_descripcion" rows="4" placeholder="Temática, colores, alergias, texto en la torta, etc.">{{ notas_personalizadas|default_if_none:'' }}</textarea>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Mensaje en la torta (opcional)</label>
+            <input type="text" class="form-control" id="modal_mensaje" maxlength="80">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Color predominante (opcional)</label>
+            <input type="text" class="form-control" id="modal_color" maxlength="40" placeholder="Ej: rosa pastel">
+          </div>
+        </div>
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <label class="form-label">Fecha del evento (opcional)</label>
+            <input type="date" class="form-control" id="modal_fecha">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Archivo / Imagen (opcional)</label>
+            <input type="file" class="form-control" id="modal_archivo" accept=".jpg,.jpeg,.png,.pdf">
+            <small class="text-muted">El archivo se adjuntará al confirmar el pedido.</small>
+          </div>
+        </div>
+        <small class="text-muted d-block mt-2">Estas notas se guardarán junto a tu pedido personalizado.</small>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-cta" id="modal_guardar_notas">Guardar notas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const btnGuardar   = document.getElementById('modal_guardar_notas');
+  const hidden       = document.getElementById('hidden_notas_personalizadas');
+  const archivoModal = document.getElementById('modal_archivo');
+  const archivoHidden= document.getElementById('archivo_personalizado');
+
+  const badgeNotas   = document.getElementById('badgeNotas');
+  const previewNotas = document.getElementById('previewNotas');
+
+  function updatePreview(payload){
+    if (!payload) { 
+      previewNotas.classList.add('d-none');
+      badgeNotas.classList.add('d-none');
+      previewNotas.textContent = '';
+      return;
+    }
+    // Crea un resumen bonito con los campos no vacíos
+    const parts = [];
+    if (payload.descripcion)        parts.push(`• ${payload.descripcion}`);
+    if (payload.mensaje_en_torta)   parts.push(`• Mensaje: “${payload.mensaje_en_torta}”`);
+    if (payload.color_predominante) parts.push(`• Color: ${payload.color_predominante}`);
+    if (payload.fecha_evento)       parts.push(`• Evento: ${payload.fecha_evento}`);
+
+    const text = parts.join('\n');
+    if (text.trim().length) {
+      previewNotas.textContent = text;
+      previewNotas.classList.remove('d-none');
+      badgeNotas.classList.remove('d-none');
+    } else {
+      previewNotas.classList.add('d-none');
+      badgeNotas.classList.add('d-none');
+      previewNotas.textContent = '';
+    }
+  }
+
+  // Si ya viene algo precargado desde el servidor (opcional):
+  try {
+    if (hidden.value) updatePreview(JSON.parse(hidden.value));
+  } catch(e) {}
+
+  btnGuardar && btnGuardar.addEventListener('click', function(){
+    const payload = {
+      descripcion:        document.getElementById('modal_descripcion').value || "",
+      mensaje_en_torta:   document.getElementById('modal_mensaje').value || "",
+      color_predominante: document.getElementById('modal_color').value || "",
+      fecha_evento:       document.getElementById('modal_fecha').value || "" // YYYY-MM-DD
+    };
+    hidden.value = JSON.stringify(payload);
+
+    // Pasar archivo al input real del form para que viaje en el POST
+    if (archivoModal && archivoModal.files && archivoModal.files[0]) {
+      archivoHidden.classList.remove('d-none');
+      archivoHidden.files = archivoModal.files;
+    }
+
+    updatePreview(payload);
+
+    // Cerrar modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('modalNotas'));
+    modal && modal.hide();
+  });
+})();
+</script>
+{% endblock %}

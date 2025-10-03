@@ -1,0 +1,60 @@
+{% extends "core/base.html" %}
+
+{% block title %}Cambiar Rol de Usuario | Dulce Arte{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background-color: #fff6ea;">
+  <div class="container">
+    <!-- Título -->
+    <h1 class="text-center mb-5" style="color: #4b2c20; font-weight: 700;">
+      ⚙️ Cambiar Rol de Usuario
+    </h1>
+
+    <!-- Card principal -->
+    <div class="card mx-auto shadow-lg border-0 rounded-4" style="max-width: 600px; background-color: #ffe4d7;">
+      <div class="card-body p-5">
+
+        <!-- Información usuario -->
+        <div class="mb-4">
+          <p class="fs-5 mb-2"><strong>👤 Usuario:</strong> {{ usuario.username }}</p>
+          <p class="fs-5 mb-2"><strong>📧 Email:</strong> {{ usuario.email }}</p>
+          <p class="fs-5"><strong>🔑 Rol actual:</strong> 
+            {% if usuario.is_staff %}
+              <span class="badge bg-success fs-6 px-3 py-2">Administrador</span>
+            {% else %}
+              <span class="badge bg-secondary fs-6 px-3 py-2">Usuario Normal</span>
+            {% endif %}
+          </p>
+        </div>
+
+        <!-- Formulario -->
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label for="rol" class="form-label fw-semibold" style="color: #4b2c20;">Seleccionar nuevo rol:</label>
+            <select name="rol" id="rol" class="form-select rounded-3 border-2" style="border-color: #a4d04f;">
+              <option value="usuario" {% if not usuario.is_staff %}selected{% endif %}>Usuario Normal</option>
+              <option value="admin" {% if usuario.is_staff %}selected{% endif %}>Administrador</option>
+            </select>
+          </div>
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-between">
+            <a href="{% url 'listar_usuarios' %}" 
+               class="btn btn-lg rounded-pill px-4" 
+               style="background-color: #ccc; color: #4b2c20; font-weight: 600;">
+              Cancelar
+            </a>
+            <button type="submit" 
+                    class="btn btn-lg rounded-pill px-4 shadow-sm" 
+                    style="background-color: #a4d04f; color: #fff; font-weight: 600;">
+              Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

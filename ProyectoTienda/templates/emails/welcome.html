@@ -1,0 +1,7 @@
+{% extends "emails/base_email.html" %}
+{% block content %}
+<h2 style="margin-top:0;">¡Bienvenid@, {{ user.first_name|default:user.username }}! 🧁</h2>
+<p>Tu cuenta en <strong>Dulce Arte</strong> ha sido creada con éxito.</p>
+<p>Ya puedes explorar nuestro catálogo, crear pedidos y disfrutar de nuestros sabores.</p>
+<p style="margin-top:16px;">Abrazo pastelero,<br>Equipo Dulce Arte</p>
+{% endblock %}

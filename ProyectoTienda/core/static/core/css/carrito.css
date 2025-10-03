@@ -1,0 +1,340 @@
+:root {
+  --bg: #fff6ea;
+  --panel: #ffe4d7;
+  --text: #4b2c20;
+  --border: #5a3730;
+  --accent: #a4d04f;
+  --accent-2: #a4d04f;
+  --muted: #8a8a8a;
+  --chip: #ffeedf;
+}
+
+.cart-wrap {
+  background: var(--bg);
+  padding: 1.5rem 0 2.5rem;
+}
+
+.cart-surface {
+  background: #fffaf2;
+  border: 3px solid var(--border);
+  border-radius: 18px;
+  padding: 0 1rem 1.25rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+
+/* encabezados */
+.cart-header,
+.topbar {
+  background: var(--panel);
+  border-bottom: 3px solid var(--border);
+  border-radius: 15px 15px 0 0;
+  padding: 0.8rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: 'Baloo 2', cursive;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1.3rem;
+}
+
+.mini-nav a {
+  color: var(--text);
+  text-decoration: none;
+  margin-left: 1rem;
+}
+
+.mini-nav a.active {
+  text-decoration: underline;
+}
+
+.cart-title {
+  font-family: 'Baloo 2', cursive;
+  color: var(--text);
+  font-size: 2rem;
+  margin: 1.2rem 0 1.2rem;
+}
+
+/* GRID A (gestionar) */
+.cart-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 0.9fr;
+  gap: 1rem;
+}
+
+@media (max-width: 992px) {
+  .cart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.cart-item {
+  background: #fff;
+  border-radius: 16px;
+  padding: 0.9rem 0.9rem;
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.ci-media img {
+  width: 80px;
+  height: auto;
+  display: block;
+}
+
+.ci-name {
+  margin: 0;
+  font-family: 'Baloo 2', cursive;
+  font-size: 1.35rem;
+  color: var(--text);
+}
+
+.ci-price {
+  color: #7a4a31;
+  margin-top: 0.2rem;
+}
+
+.ci-qty {
+  display: flex;
+  align-items: center;
+}
+
+.qty-form {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn-qty {
+  border: none;
+  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2rem;
+  color: #5a3a2d;
+  background: linear-gradient(180deg, #ffe3c2, #ffd2a8);
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+}
+
+.btn-qty:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.qty-box {
+  width: 54px;
+  text-align: center;
+  border: 2px solid #e3c6a4;
+  border-radius: 12px;
+  padding: 0.35rem 0;
+  font-weight: 700;
+}
+
+.btn-trash {
+  margin-left: 0.3rem;
+  border: none;
+  background: #f3f3f3;
+  color: #50bd68;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.btn-trash:hover {
+  background: #ececec;
+}
+
+/* Aside resumen */
+.cart-aside {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.alert-stock {
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  background: #fff7ef;
+  border: 2px solid #ffcc9e;
+  border-radius: 14px;
+  padding: 0.8rem;
+}
+
+.alert-stock .icon {
+  background: #ff8d6b;
+  color: #fff;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.cart-summary {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.row-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.35rem 0;
+}
+
+.row-line.total span {
+  color: #e04d2b;
+  font-weight: 700;
+}
+
+/* Nuevo estilo de botón .btn-cta */
+.btn-cta {
+  background-color: #a4d04f;
+  color: #4b2c20;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  margin-top: 0.7rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.btn-cta:hover {
+  background-color: #8ac244;
+  color: #fff;
+}
+
+/* Tabla B */
+.table-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.row-item {
+  display: grid;
+  grid-template-columns: 90px 1fr 280px 140px;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid #f1e2d7;
+}
+
+.row-item:last-child {
+  border-bottom: none;
+}
+
+.cell.media img {
+  width: 64px;
+  height: auto;
+}
+
+.cell.name {
+  font-family: 'Baloo 2', cursive;
+  color: var(--text);
+  font-size: 1.2rem;
+}
+
+.cell.price {
+  text-align: right;
+  color: #7b3c2d;
+  font-weight: 700;
+}
+
+.btn-qty.sm {
+  width: 36px;
+  height: 36px;
+}
+
+.qty-badge {
+  min-width: 36px;
+  text-align: center;
+  background: var(--chip);
+  border: 1px solid #f2d4ba;
+  border-radius: 10px;
+  padding: 0.35rem 0.4rem;
+  margin: 0 0.25rem;
+  display: inline-block;
+}
+
+.btn-trash.sm {
+  width: 36px;
+  height: 36px;
+}
+
+.footer-bar {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.subtotal {
+  font-size: 1.2rem;
+}
+
+.btn-light {
+  border: 1px solid #f1c9a5;
+  background: #fff6ed;
+  color: #6b3b2b;
+  border-radius: 12px;
+  padding: 0.55rem 1rem;
+}
+
+.btn-cta.lg {
+  padding: 0.7rem 1.3rem;
+}
+
+.empty {
+  padding: 1rem;
+}
+
+.direccion-box {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #fff2e1;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+}
+
+.direccion-box h4 {
+  margin-bottom: 0.5rem;
+  color: var(--text);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.direccion-box input {
+  width: 100%;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  background: #fff;
+}

@@ -1,0 +1,62 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Actualizar Estado | Dulce Arte{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'core/css/checkout.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<section class="checkout-wrap d-flex align-items-center justify-content-center min-vh-100 py-5">
+  <div class="container checkout-surface" style="max-width: 600px;">
+    
+    <!-- 🧁 Encabezado -->
+    <div class="text-center mb-4">
+      <img src="{% static 'core/img/logo.png' %}" width="60" height="60" alt="Dulce Arte" class="mb-2">
+      <h1 class="fw-bold">Actualizar Estado del Pedido</h1>
+      <p class="text-muted fs-5">Número: <strong>#{{ pedido.numero }}</strong></p>
+    </div>
+
+    <!-- 📦 Formulario -->
+    <div class="card shadow-sm border-0 rounded-4 p-4">
+      <div class="card-body">
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Estado -->
+          <div class="mb-4">
+            <label for="estado" class="form-label fw-bold">Selecciona el nuevo estado:</label>
+            <select name="estado" id="estado" class="form-select form-select-lg" required>
+              <option value="pendiente" {% if pedido.estado == "pendiente" %}selected{% endif %}>Pendiente</option>
+              <option value="preparando" {% if pedido.estado == "preparando" %}selected{% endif %}>Preparando</option>
+              <option value="enviado" {% if pedido.estado == "enviado" %}selected{% endif %}>Enviado</option>
+              <option value="entregado" {% if pedido.estado == "entregado" %}selected{% endif %}>Entregado</option>
+              <option value="cancelado" {% if pedido.estado == "cancelado" %}selected{% endif %}>Cancelado</option>
+            </select>
+          </div>
+
+          <!-- Mensaje adicional -->
+          <div class="mb-4">
+            <label for="mensaje_extra" class="form-label fw-bold">Mensaje al cliente (opcional):</label>
+            <textarea name="mensaje_extra" id="mensaje_extra" rows="4" class="form-control" placeholder="Ej: Tu pedido está en camino 🚚"></textarea>
+            <div class="form-text">Este mensaje aparecerá en el correo enviado al cliente.</div>
+          </div>
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'ver_pedidos' %}" class="btn btn-light px-4 py-2">
+              <i class="bi bi-arrow-left"></i> Volver
+            </a>
+            <button type="submit" class="btn btn-cta px-4 py-2">
+              <i class="bi bi-check-circle"></i> Guardar Cambios
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+{% endblock %}

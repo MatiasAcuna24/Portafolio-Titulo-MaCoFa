@@ -1,0 +1,66 @@
+{% extends "core/base.html" %}
+
+{% block title %}Usuarios - Admin | Dulce Arte{% endblock %}
+
+{% block content %}
+<section class="py-5" style="background-color: #fff6ea;">
+  <div class="container">
+
+    <!-- Título -->
+    <h1 class="text-center mb-5" style="color: #4b2c20; font-weight: 700;">
+      👥 Gestión de Usuarios
+    </h1>
+
+    <!-- Card envolvente -->
+    <div class="card shadow-lg border-0 rounded-4" style="background-color: #ffe4d7;">
+      <div class="card-body p-4">
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+          <table class="table table-hover text-center align-middle mb-0">
+            <thead style="background-color: #a4d04f; color: #fff; font-size: 1.1rem;">
+              <tr>
+                <th>ID</th>
+                <th>Nombre de Usuario</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in usuarios %}
+              <tr>
+                <td class="fw-semibold">{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td>
+                  {% if u.is_staff %}
+                    <span class="badge rounded-pill px-3 py-2 bg-success">Administrador</span>
+                  {% else %}
+                    <span class="badge rounded-pill px-3 py-2 bg-secondary">Usuario Normal</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'cambiar_rol_usuario' u.id %}" 
+                     class="btn btn-sm rounded-pill px-3 shadow-sm" 
+                     style="background-color: #ffc107; color: #4b2c20; font-weight: 600;">
+                    Cambiar Rol
+                  </a>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="5" class="text-muted py-4">
+                  No hay usuarios registrados.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

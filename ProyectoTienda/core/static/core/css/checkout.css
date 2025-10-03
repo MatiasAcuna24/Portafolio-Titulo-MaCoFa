@@ -1,0 +1,248 @@
+:root {
+  --bg: #fff6ea;
+  --panel: #ffe4d7;
+  --text: #4b2c20;
+  --border: #5a3730;
+  --accent: #a4d04f;
+  --accent-2: #8ac244;
+  --muted: #bfbfbf;
+}
+
+/* ===== Global ===== */
+body {
+  background-color: var(--bg);
+  font-family: 'Baloo 2', cursive;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+/* ===== Layout principal ===== */
+.checkout-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh; /* centra verticalmente */
+  padding: 2rem 1rem;
+}
+
+.container.checkout-surface {
+  background-color: #fff;
+  padding: 2.5rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 800px; /* centrado y ancho controlado */
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ===== Topbar ===== */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.topbar .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: bold;
+  font-size: 1.5rem;
+  color: var(--text);
+}
+
+.topbar .mini-nav a {
+  margin-left: 1.2rem;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+.topbar .mini-nav a:hover {
+  color: var(--accent);
+}
+
+.topbar .mini-nav .active {
+  color: var(--accent);
+}
+
+/* ===== Título ===== */
+.checkout-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 2.5rem;
+  color: var(--text);
+  text-align: center;
+}
+
+/* ===== Contenedor en una columna centrada ===== */
+.checkout-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+/* ===== Secciones generales ===== */
+.checkout-address,
+.checkout-details {
+  width: 100%;
+  background-color: var(--panel);
+  padding: 2rem;
+  border-radius: 1.2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+/* ===== Formulario de dirección ===== */
+.checkout-address h2 {
+  font-size: 1.7rem;
+  font-weight: bold;
+  margin-bottom: 1.8rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.direccion-form label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.direccion-form .form-control {
+  border-radius: 0.8rem;
+  border: 1px solid #ccc;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.direccion-form .form-control:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(164, 208, 79, 0.25);
+}
+
+.direccion-form .invalid-feedback {
+  font-size: 0.9rem;
+  color: #d9534f;
+}
+
+/* ===== Resumen del pedido ===== */
+.checkout-details h2 {
+  font-size: 1.7rem;
+  font-weight: bold;
+  margin-bottom: 1.8rem;
+  color: var(--text);
+  text-align: center;
+}
+
+.product-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checkout-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid #ddd;
+  font-size: 1.1rem;
+}
+
+.checkout-item:last-child {
+  border-bottom: none;
+}
+
+/* ===== Totales ===== */
+.totals {
+  margin-top: 1.5rem;
+}
+
+.totals p {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+
+.totals p strong {
+  font-weight: 700;
+}
+
+.totals p:last-child {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--text);
+  border-top: 2px solid var(--border);
+  padding-top: 1rem;
+}
+
+/* ===== Botones ===== */
+.btn-cta {
+  background-color: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 2rem;
+  padding: 0.9rem 2rem;
+  font-weight: 600;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+}
+
+.btn-cta:hover {
+  background-color: var(--accent-2);
+  color: #fff;
+}
+
+.btn-light {
+  background-color: #eee;
+  color: var(--text);
+  border: 1px solid #ccc;
+  border-radius: 2rem;
+  padding: 0.7rem 2rem;
+  font-weight: 500;
+  font-size: 1.1rem;
+  cursor: pointer;
+  text-align: center;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.btn-light:hover {
+  background-color: #ddd;
+}
+
+/* ===== Acciones inferiores ===== */
+.checkout-actions {
+  text-align: center;
+  margin-top: 3rem;
+}
+
+.checkout-actions a {
+  text-decoration: none;
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 768px) {
+  .checkout-surface {
+    padding: 1.5rem;
+  }
+
+  .checkout-title {
+    font-size: 2rem;
+  }
+
+  .checkout-address,
+  .checkout-details {
+    padding: 1.5rem;
+  }
+}
