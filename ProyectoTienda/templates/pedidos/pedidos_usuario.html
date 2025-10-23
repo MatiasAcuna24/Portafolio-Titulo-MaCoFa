@@ -6,18 +6,61 @@
 {% block css %}
 <link rel="stylesheet" href="{% static 'core/css/checkout.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<style>
+  .export-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: .75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .export-buttons a {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    font-weight: 600;
+  }
+  .export-buttons i {
+    font-size: 1.1rem;
+  }
+  .table thead th {
+    background-color: #a4d04f !important;
+    color: #fff;
+    border: none;
+  }
+  .badge {
+    font-size: 0.85rem;
+    padding: .5em .75em;
+  }
+  .checkout-title {
+    font-weight: 700;
+    color: #4b2c20;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 <section class="checkout-wrap py-5">
   <div class="container checkout-surface">
     <!-- 🧁 Título -->
-    <h1 class="checkout-title text-center mb-5">📦 Mis Pedidos</h1>
+    <h1 class="checkout-title text-center mb-4">📦 Mis Pedidos</h1>
+
+    <!-- 📊 Botones de exportación (solo admin) -->
+    {% if request.user.is_staff %}
+    <div class="export-buttons">
+      <a href="{% url 'reporte_pedidos_excel' %}" class="btn btn-success">
+        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
+      </a>
+      <a href="{% url 'reporte_pedidos_pdf' %}" class="btn btn-danger">
+        <i class="bi bi-file-earmark-pdf"></i> Exportar a PDF
+      </a>
+    </div>
+    {% endif %}
 
     {% if pedidos %}
-      <div class="table-responsive">
-        <table class="table table-hover align-middle text-center">
-          <thead class="table-success">
+      <div class="table-responsive shadow-sm rounded-4">
+        <table class="table table-hover align-middle text-center mb-0">
+          <thead>
             <tr>
               <th># Pedido</th>
               <th>Estado</th>
@@ -36,13 +79,14 @@
                   {% if pedido.estado == 'pendiente' %}bg-warning text-dark
                   {% elif pedido.estado == 'enviado' %}bg-primary
                   {% elif pedido.estado == 'entregado' %}bg-success
+                  {% elif pedido.estado == 'cancelado' %}bg-danger
                   {% else %}bg-secondary{% endif %}">
                   {{ pedido.estado|title }}
                 </span>
               </td>
-              <td>{{ pedido.creado_en|date:"d/m/Y H:i" }}</td>
+              <td>{{ pedido.fecha_creacion|date:"d/m/Y H:i" }}</td>
               <td>CLP {{ pedido.total|floatformat:0 }}</td>
-              <td>{{ pedido.zona.nombre }}</td>
+              <td>{{ pedido.zona.nombre|default:"-" }}</td>
               <td class="d-flex justify-content-center gap-2 flex-wrap">
 
                 <!-- 👁️ Ver detalle -->

@@ -36,7 +36,7 @@ class Producto(models.Model):
     slug = models.SlugField(max_length=140, unique=True, blank=True)
     nombre       = models.CharField(max_length=100)
     precio       = models.DecimalField(max_digits=10, decimal_places=2)
-    descripcion  = models.TextField()
+    descripcion  = models.TextField(max_length=500)
     imagen       = models.ImageField(upload_to='productos/')
     stock        = models.PositiveIntegerField(default=0)
     created_at   = models.DateTimeField(auto_now_add=True)
@@ -111,25 +111,61 @@ class ZonaDespacho(models.Model):
     def __str__(self):
         return f"{self.nombre} (CLP {self.costo})"
 
+class Region(models.Model):
+    nombre = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural = "Regiones"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return self.nombre
+
+
+class Provincia(models.Model):
+    nombre = models.CharField(max_length=100)
+    region = models.ForeignKey(Region, on_delete=models.CASCADE, related_name="provincias")
+
+    class Meta:
+        verbose_name_plural = "Provincias"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return f"{self.nombre} ({self.region.nombre})"
+
+
+class Comuna(models.Model):
+    nombre = models.CharField(max_length=100)
+    provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE, related_name="comunas")
+
+    class Meta:
+        verbose_name_plural = "Comunas"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return f"{self.nombre} ({self.provincia.nombre})"
 
 class Direccion(models.Model):
-    usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE, related_name="direcciones")
-    alias = models.CharField(max_length=60, blank=True, help_text="Ej: Casa, Trabajo")
+    usuario = models.ForeignKey(Usuarios,on_delete=models.CASCADE,related_name="direcciones")
+    alias = models.CharField(max_length=60,blank=True,help_text="Ej: Casa, Trabajo")
     calle = models.CharField(max_length=120)
     numero = models.CharField(max_length=20, blank=True)
-    comuna = models.CharField(max_length=80)
-    ciudad = models.CharField(max_length=80)
-    region = models.CharField(max_length=80)
+    # Relaciones normalizadas
+    comuna = models.ForeignKey(Comuna,on_delete=models.PROTECT,related_name="direcciones")
+    provincia = models.ForeignKey(Provincia,on_delete=models.PROTECT,related_name="direcciones",null=True,blank=True)
+    region = models.ForeignKey(Region,on_delete=models.PROTECT,related_name="direcciones",null=True,blank=True)
     referencia = models.CharField(max_length=180, blank=True)
-    zona = models.ForeignKey(ZonaDespacho, on_delete=models.PROTECT, null=True, blank=True)
-
+    zona = models.ForeignKey(ZonaDespacho,on_delete=models.PROTECT,null=True,blank=True)
     activa = models.BooleanField(default=True)
 
     class Meta:
         ordering = ["usuario", "id"]
+        verbose_name = "Dirección"
+        verbose_name_plural = "Direcciones"
 
     def __str__(self):
-        return f"{self.calle} {self.numero}, {self.comuna}"
+        return f"{self.calle} {self.numero}, {self.comuna.nombre}"
+
 
 
 # ---------------------------

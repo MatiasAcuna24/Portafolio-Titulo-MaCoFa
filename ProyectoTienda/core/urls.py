@@ -37,8 +37,12 @@ urlpatterns = [
 
     #Pedidos
     path('checkout/', checkout, name='checkout'),
+    path('ajax/cargar_provincias/', cargar_provincias, name='cargar_provincias'),
+    path('ajax/cargar_comunas/', cargar_comunas, name='cargar_comunas'),
     path("checkout/<int:pedido_id>/", pedido_confirmado, name="pedido_confirmado"),
     path("mis-pedidos/", ver_pedidos, name="ver_pedidos"),
+    
+
 
     #Pedidos personalizados
     path("pedidos/<int:pedido_id>/personalizado/", pedido_personalizado, name="personalizado_editar"),
@@ -46,6 +50,8 @@ urlpatterns = [
     #PedidosAdmin
     path("pedido/<int:pedido_id>/actualizar/", actualizar_estado_pedido, name="actualizar_estado_pedido"),
     path("pedido/<int:pedido_id>/eliminar/", eliminar_pedido, name="eliminar_pedido"),
+    path('admin/reporte_pedidos_excel/', exportar_pedidos_excel, name='reporte_pedidos_excel'),
+    path('admin/reporte_pedidos_pdf/', exportar_pedidos_pdf, name='reporte_pedidos_pdf'),
 
 
     #Registro y login

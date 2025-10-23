@@ -1,11 +1,18 @@
 /* FUENTES Y RESET */
-body {
+body, html {
   font-family: 'Baloo 2', cursive;
   background-color: #fff8e6;
   color: #4b2c20;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 /* NAVBAR */
@@ -94,14 +101,21 @@ body {
 
 /* FOOTER */
 footer {
-  background-color: #fff8e6;
+  background-color: #3b2f2f; /* color oscuro del footer */
   color: #ffffff;
   font-size: 0.95rem;
+  margin-top: auto; /* se empuja hacia el fondo de la página */
+  width: 100%;
 }
 
 footer h5 {
   font-weight: 700;
   margin-bottom: 1rem;
+}
+
+footer a {
+  color: #ffffff;
+  text-decoration: none;
 }
 
 footer a:hover {

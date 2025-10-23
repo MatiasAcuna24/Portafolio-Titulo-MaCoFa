@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="{% static 'core/css/checkout.css' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <style>
-  /* Botón “pro” para notas */
   .btn-notas {
     display:flex; align-items:center; justify-content:center; gap:.5rem;
     width:100%;
@@ -47,7 +46,6 @@
     <h1 class="checkout-title text-center mb-5">🧁 Finalizar compra</h1>
 
     <div class="row justify-content-center">
-      
       <!-- 🏠 Formulario de dirección -->
       <div class="col-lg-7 mb-4">
         <div class="checkout-address">
@@ -55,9 +53,7 @@
           <form method="post" class="direccion-form" enctype="multipart/form-data">
             {% csrf_token %}
 
-            {# Campo oculto que recibirá el JSON del modal #}
             <input type="hidden" name="notas_personalizadas" id="hidden_notas_personalizadas">
-            {# (Opcional) archivo de referencia desde checkout #}
             <input type="file" name="archivo_personalizado" id="archivo_personalizado" class="d-none">
 
             <div class="mb-3">
@@ -70,19 +66,30 @@
               <input type="text" class="form-control" id="numero" name="numero">
             </div>
 
-            <div class="mb-3">
-              <label for="comuna" class="form-label">Comuna *</label>
-              <input type="text" class="form-control" id="comuna" name="comuna" required>
-            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label for="region">Región *</label>
+                <select id="region" name="region" class="form-select" required>
+                  <option value="">-- Selecciona una región --</option>
+                  {% for region in regiones %}
+                    <option value="{{ region.id }}">{{ region.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
 
-            <div class="mb-3">
-              <label for="ciudad" class="form-label">Ciudad *</label>
-              <input type="text" class="form-control" id="ciudad" name="ciudad" required>
-            </div>
+              <div class="col-md-4 mb-3">
+                <label for="provincia">Provincia *</label>
+                <select id="provincia" name="provincia" class="form-select" required>
+                  <option value="">-- Selecciona una provincia --</option>
+                </select>
+              </div>
 
-            <div class="mb-3">
-              <label for="region" class="form-label">Región *</label>
-              <input type="text" class="form-control" id="region" name="region" required>
+              <div class="col-md-4 mb-3">
+                <label for="comuna">Comuna *</label>
+                <select id="comuna" name="comuna" class="form-select" required>
+                  <option value="">-- Selecciona una comuna --</option>
+                </select>
+              </div>
             </div>
 
             <div class="mb-3">
@@ -128,19 +135,16 @@
           <div class="totals">
             <p><span>Subtotal:</span> <strong>CLP {{ subtotal|floatformat:0 }}</strong></p>
             <p><span>Descuento:</span> <strong>CLP {{ descuento|floatformat:0 }}</strong></p>
-
             {% if costo_despacho > 0 %}
-            <p><span>Despacho ({{ zona_seleccionada.nombre }}):</span> <strong>CLP {{ costo_despacho|floatformat:0 }}</strong></p>
+              <p><span>Despacho ({{ zona_seleccionada.nombre }}):</span> <strong>CLP {{ costo_despacho|floatformat:0 }}</strong></p>
             {% else %}
-            <p><span>Despacho:</span> <strong>Selecciona una zona</strong></p>
+              <p><span>Despacho:</span> <strong>Selecciona una zona</strong></p>
             {% endif %}
-
             <p class="fs-5 fw-bold"><span>Total:</span> <strong>CLP {{ total|floatformat:0 }}</strong></p>
           </div>
 
           <hr class="my-3">
 
-          {# 🎨 Sección de Personalización dentro del resumen #}
           <div class="mb-2 d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
               <i class="bi bi-brush"></i>
@@ -157,12 +161,11 @@
           </a>
         </div>
       </div>
-
     </div>
   </div>
 </section>
 
-{# Modal de notas de personalización #}
+<!-- Modal de notas -->
 <div class="modal fade" id="modalNotas" tabindex="-1" aria-labelledby="modalNotasLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -173,7 +176,7 @@
       <div class="modal-body">
         <div class="mb-3">
           <label class="form-label">Descripción / Detalle</label>
-          <textarea class="form-control" id="modal_descripcion" rows="4" placeholder="Temática, colores, alergias, texto en la torta, etc.">{{ notas_personalizadas|default_if_none:'' }}</textarea>
+          <textarea class="form-control" id="modal_descripcion" rows="4" placeholder="Temática, colores, alergias, texto en la torta, etc."></textarea>
         </div>
         <div class="row g-3">
           <div class="col-md-6">
@@ -185,18 +188,6 @@
             <input type="text" class="form-control" id="modal_color" maxlength="40" placeholder="Ej: rosa pastel">
           </div>
         </div>
-        <div class="row g-3 mt-1">
-          <div class="col-md-6">
-            <label class="form-label">Fecha del evento (opcional)</label>
-            <input type="date" class="form-control" id="modal_fecha">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label">Archivo / Imagen (opcional)</label>
-            <input type="file" class="form-control" id="modal_archivo" accept=".jpg,.jpeg,.png,.pdf">
-            <small class="text-muted">El archivo se adjuntará al confirmar el pedido.</small>
-          </div>
-        </div>
-        <small class="text-muted d-block mt-2">Estas notas se guardarán junto a tu pedido personalizado.</small>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
@@ -206,68 +197,35 @@
   </div>
 </div>
 
+<!-- Scripts dinámicos -->
 <script>
-(function(){
-  const btnGuardar   = document.getElementById('modal_guardar_notas');
-  const hidden       = document.getElementById('hidden_notas_personalizadas');
-  const archivoModal = document.getElementById('modal_archivo');
-  const archivoHidden= document.getElementById('archivo_personalizado');
+document.addEventListener('DOMContentLoaded', function() {
+  const regionSelect = document.getElementById('region');
+  const provinciaSelect = document.getElementById('provincia');
+  const comunaSelect = document.getElementById('comuna');
 
-  const badgeNotas   = document.getElementById('badgeNotas');
-  const previewNotas = document.getElementById('previewNotas');
-
-  function updatePreview(payload){
-    if (!payload) { 
-      previewNotas.classList.add('d-none');
-      badgeNotas.classList.add('d-none');
-      previewNotas.textContent = '';
-      return;
-    }
-    // Crea un resumen bonito con los campos no vacíos
-    const parts = [];
-    if (payload.descripcion)        parts.push(`• ${payload.descripcion}`);
-    if (payload.mensaje_en_torta)   parts.push(`• Mensaje: “${payload.mensaje_en_torta}”`);
-    if (payload.color_predominante) parts.push(`• Color: ${payload.color_predominante}`);
-    if (payload.fecha_evento)       parts.push(`• Evento: ${payload.fecha_evento}`);
-
-    const text = parts.join('\n');
-    if (text.trim().length) {
-      previewNotas.textContent = text;
-      previewNotas.classList.remove('d-none');
-      badgeNotas.classList.remove('d-none');
-    } else {
-      previewNotas.classList.add('d-none');
-      badgeNotas.classList.add('d-none');
-      previewNotas.textContent = '';
-    }
-  }
-
-  // Si ya viene algo precargado desde el servidor (opcional):
-  try {
-    if (hidden.value) updatePreview(JSON.parse(hidden.value));
-  } catch(e) {}
-
-  btnGuardar && btnGuardar.addEventListener('click', function(){
-    const payload = {
-      descripcion:        document.getElementById('modal_descripcion').value || "",
-      mensaje_en_torta:   document.getElementById('modal_mensaje').value || "",
-      color_predominante: document.getElementById('modal_color').value || "",
-      fecha_evento:       document.getElementById('modal_fecha').value || "" // YYYY-MM-DD
-    };
-    hidden.value = JSON.stringify(payload);
-
-    // Pasar archivo al input real del form para que viaje en el POST
-    if (archivoModal && archivoModal.files && archivoModal.files[0]) {
-      archivoHidden.classList.remove('d-none');
-      archivoHidden.files = archivoModal.files;
-    }
-
-    updatePreview(payload);
-
-    // Cerrar modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('modalNotas'));
-    modal && modal.hide();
+  regionSelect.addEventListener('change', function() {
+    const regionId = this.value;
+    provinciaSelect.innerHTML = '<option value="">Cargando...</option>';
+    fetch(`/ajax/cargar_provincias/?region_id=${regionId}`)
+      .then(res => res.json())
+      .then(data => {
+        provinciaSelect.innerHTML = '<option value="">-- Selecciona una provincia --</option>';
+        data.forEach(item => provinciaSelect.innerHTML += `<option value="${item.id}">${item.nombre}</option>`);
+        comunaSelect.innerHTML = '<option value="">-- Selecciona una comuna --</option>';
+      });
   });
-})();
+
+  provinciaSelect.addEventListener('change', function() {
+    const provinciaId = this.value;
+    comunaSelect.innerHTML = '<option value="">Cargando...</option>';
+    fetch(`/ajax/cargar_comunas/?provincia_id=${provinciaId}`)
+      .then(res => res.json())
+      .then(data => {
+        comunaSelect.innerHTML = '<option value="">-- Selecciona una comuna --</option>';
+        data.forEach(item => comunaSelect.innerHTML += `<option value="${item.id}">${item.nombre}</option>`);
+      });
+  });
+});
 </script>
 {% endblock %}

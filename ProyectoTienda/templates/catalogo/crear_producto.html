@@ -18,6 +18,7 @@
           {% csrf_token %}
           {{ form.non_field_errors }}
           <div class="mb-3">{{ form.nombre.label_tag }} {{ form.nombre }}</div>
+          <div class="mb-3">{{ form.slug.label_tag }} {{ form.slug }}</div>
           <div class="mb-3">{{ form.precio.label_tag }} {{ form.precio }}</div>
           <div class="mb-3">{{ form.stock.label_tag }} {{ form.stock }}</div>
           <div class="mb-3">{{ form.categoria.label_tag }} {{ form.categoria }}</div>

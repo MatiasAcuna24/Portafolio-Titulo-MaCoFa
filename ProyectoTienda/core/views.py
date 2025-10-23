@@ -1,3 +1,4 @@
+import openpyxl
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages  # Import messages for success/error notifications
@@ -16,6 +17,12 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from core.notifications import *
 from django.core.mail import send_mail  # Import send_mail for sending emails
+from django.http import JsonResponse  # Import JsonResponse for AJAX responses
+from django.http import HttpResponse  # Import HttpResponse for file responses
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.http import FileResponse
+from io import BytesIO
 
 # Create your views here.
 
@@ -149,6 +156,7 @@ def crear_producto(request):
             messages.success(request, "Producto creado exitosamente.")
             return redirect("productos")
         else:
+            print(form.errors)
             messages.error(request, "Revisa los campos del formulario.")
     else:
         form = ProductoForm()
@@ -244,58 +252,53 @@ def vaciar_carrito(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def checkout(request, pedido_id=None):
-    # 📦 Obtener el carrito del usuario
     carrito = get_object_or_404(Carrito, usuario=request.user)
     items = carrito.items.select_related('producto').all()
 
-    # ✅ Caso 1: Si ya existe un pedido, mostrar confirmación
     if pedido_id:
         pedido = get_object_or_404(Pedido, id=pedido_id, usuario=request.user)
         return render(request, 'carrito/pedido_confirmado.html', {'pedido': pedido})
 
-    # ✅ Caso 2: Evitar continuar si el carrito está vacío
     if not items:
         messages.error(request, "Tu carrito está vacío.")
         return redirect('ver_carrito')
 
-    # 📩 POST: Crear el pedido
     if request.method == "POST":
         calle = request.POST.get("calle")
         numero = request.POST.get("numero")
-        comuna = request.POST.get("comuna")
-        ciudad = request.POST.get("ciudad")
-        region = request.POST.get("region")
+        comuna_id = request.POST.get("comuna")
+        provincia_id = request.POST.get("provincia")
+        region_id = request.POST.get("region")
         referencia = request.POST.get("referencia", "")
         zona_id = request.POST.get("zona")
 
-        # Validar campos obligatorios
-        if not all([calle, comuna, ciudad, region, zona_id]):
+        if not all([calle, comuna_id, region_id, zona_id]):
             messages.error(request, "Todos los campos obligatorios deben ser completados.")
             return redirect('checkout')
 
+        comuna = Comuna.objects.get(id=comuna_id)
+        provincia = Provincia.objects.get(id=provincia_id) if provincia_id else comuna.provincia
+        region = Region.objects.get(id=region_id)
         zona = ZonaDespacho.objects.filter(id=zona_id).first()
 
-        # 🏠 Crear dirección de envío
         direccion = Direccion.objects.create(
             usuario=request.user,
             alias="Dirección rápida",
             calle=calle,
             numero=numero,
             comuna=comuna,
-            ciudad=ciudad,
+            provincia=provincia,
             region=region,
             referencia=referencia,
             activa=True,
             zona=zona
         )
 
-        # 🧮 Calcular totales
         subtotal = sum(item.producto.precio * item.cantidad for item in items)
         descuento = 0
         costo_despacho = zona.costo if zona else 0
         total = subtotal - descuento + costo_despacho
 
-        # 📦 Crear pedido
         numero_pedido = f"PED-{timezone.now().strftime('%Y%m%d')}-{get_random_string(6).upper()}"
         pedido = Pedido.objects.create(
             usuario=request.user,
@@ -309,7 +312,6 @@ def checkout(request, pedido_id=None):
             numero=numero_pedido,
         )
 
-        # 📦 Crear items del pedido y actualizar stock
         for item in items:
             ItemPedido.objects.create(
                 pedido=pedido,
@@ -320,38 +322,42 @@ def checkout(request, pedido_id=None):
             item.producto.stock -= item.cantidad
             item.producto.save()
 
-        # 🧹 Vaciar carrito
         carrito.items.all().delete()
 
-        # ✉️ Enviar correo de confirmación
         if request.user.email:
             send_order_confirmation(request.user, pedido)
 
         messages.success(request, "¡Pedido creado exitosamente!")
         return redirect("pedido_confirmado", pedido_id=pedido.id)
 
-    # 📄 GET: Mostrar formulario + resumen del pedido antes de confirmar
     else:
         subtotal = sum(item.producto.precio * item.cantidad for item in items)
         descuento = 0
-
-        # ✅ Detectar si el usuario seleccionó una zona
-        zona_id = request.GET.get("zona") or request.POST.get("zona")
-        zona = ZonaDespacho.objects.filter(id=zona_id).first() if zona_id else None
-        costo_despacho = zona.costo if zona else 0
-        total = subtotal - descuento + costo_despacho
-
         zonas = ZonaDespacho.objects.all().order_by("costo")
+        regiones = Region.objects.all().order_by("nombre")
+        provincias = Provincia.objects.all().order_by("nombre")
+        comunas = Comuna.objects.all().order_by("nombre")
 
         return render(request, 'carrito/checkout.html', {
             'items': items,
             'subtotal': subtotal,
             'descuento': descuento,
-            'costo_despacho': costo_despacho,
-            'total': total,
+            'total': subtotal - descuento,
             'zonas': zonas,
-            'zona_seleccionada': zona,
+            'regiones': regiones,
+            'provincias': provincias,
+            'comunas': comunas,
         })
+
+def cargar_provincias(request):
+    region_id = request.GET.get("region_id")
+    provincias = list(Provincia.objects.filter(region_id=region_id).values("id", "nombre"))
+    return JsonResponse(provincias, safe=False)
+
+def cargar_comunas(request):
+    provincia_id = request.GET.get("provincia_id")
+    comunas = list(Comuna.objects.filter(provincia_id=provincia_id).values("id", "nombre"))
+    return JsonResponse(comunas, safe=False)
 
 @login_required
 def pedido_confirmado(request, pedido_id):
@@ -444,6 +450,60 @@ def eliminar_pedido(request, pedido_id):
             messages.success(request, f"El pedido {pedido.numero} ha sido eliminado exitosamente.")
         
     return redirect("ver_pedidos")
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def exportar_pedidos_excel(request):
+    pedidos = Pedido.objects.select_related('usuario', 'direccion_envio').all().order_by('-id')
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Pedidos Dulce Arte"
+
+    # Encabezados
+    headers = ['N° Pedido', 'Cliente', 'Dirección', 'Zona', 'Total (CLP)', 'Estado', 'Fecha']
+    ws.append(headers)
+
+    for pedido in pedidos:
+        ws.append([
+            pedido.numero,
+            pedido.usuario.username,
+            str(pedido.direccion_envio),
+            pedido.zona.nombre if pedido.zona else "",
+            float(pedido.total),
+            pedido.estado,
+            pedido.creado_en.strftime('%Y-%m-%d %H:%M'),
+        ])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=Reporte_Pedidos_DulceArte.xlsx'
+    wb.save(response)
+    return response
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def exportar_pedidos_pdf(request):
+    pedidos = Pedido.objects.select_related('usuario', 'direccion_envio').all().order_by('-creado_en')
+
+    buffer = BytesIO()
+    c = canvas.Canvas(buffer, pagesize=letter)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(200, 770, "Reporte de Pedidos - Dulce Arte")
+
+    y = 730
+    c.setFont("Helvetica", 10)
+    for pedido in pedidos:
+        linea = f"{pedido.numero} - {pedido.usuario.username} - {pedido.total} CLP - {pedido.estado}"
+        c.drawString(50, y, linea)
+        y -= 20
+        if y < 50:
+            c.showPage()
+            y = 770
+            c.setFont("Helvetica", 10)
+
+    c.save()
+    buffer.seek(0)
+    return FileResponse(buffer, as_attachment=True, filename='Reporte_Pedidos_DulceArte.pdf')
 
 #Login y registro
 def registro(request):

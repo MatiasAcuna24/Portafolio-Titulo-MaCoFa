@@ -56,9 +56,10 @@ class PerfilUsuarioForm(forms.ModelForm):
 class ProductoForm(forms.ModelForm):
     class Meta:
         model = Producto
-        fields = ["nombre", "precio", "stock", "categoria", "imagen"]
+        fields = ["nombre","slug", "precio", "stock", "categoria", "imagen"]
         widgets = {
             "nombre": forms.TextInput(attrs={"class": "form-control", "required": True}),
+            "slug": forms.TextInput(attrs={"class": "form-control", "required": True}),
             "precio": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0", "required": True}),
             "stock": forms.NumberInput(attrs={"class": "form-control", "min": "0", "value": "0", "required": True}),
             "categoria": forms.Select(attrs={"class": "form-select", "required": True}),
