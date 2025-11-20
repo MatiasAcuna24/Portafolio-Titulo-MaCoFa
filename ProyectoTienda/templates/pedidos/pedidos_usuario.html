@@ -44,19 +44,6 @@
   <div class="container checkout-surface">
     <!-- 🧁 Título -->
     <h1 class="checkout-title text-center mb-4">📦 Mis Pedidos</h1>
-
-    <!-- 📊 Botones de exportación (solo admin) -->
-    {% if request.user.is_staff %}
-    <div class="export-buttons">
-      <a href="{% url 'reporte_pedidos_excel' %}" class="btn btn-success">
-        <i class="bi bi-file-earmark-excel"></i> Exportar a Excel
-      </a>
-      <a href="{% url 'reporte_pedidos_pdf' %}" class="btn btn-danger">
-        <i class="bi bi-file-earmark-pdf"></i> Exportar a PDF
-      </a>
-    </div>
-    {% endif %}
-
     {% if pedidos %}
       <div class="table-responsive shadow-sm rounded-4">
         <table class="table table-hover align-middle text-center mb-0">

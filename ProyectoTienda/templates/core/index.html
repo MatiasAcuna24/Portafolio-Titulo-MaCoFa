@@ -4,30 +4,125 @@
 {% block title %}Inicio | Dulce Arte{% endblock %}
 
 {% block content %}
+
+<!-- =======================
+     CARRUSEL DE BANNERS
+======================= -->
+{% if banners %}
+<section id="banner-carrusel" class="mb-5">
+  <div id="carouselBanners" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      {% for banner in banners %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        {% if banner.url_destino %}
+        <a href="{{ banner.url_destino }}">
+          <img src="{{ banner.imagen.url }}" class="d-block w-100 rounded-4 shadow-sm" alt="{{ banner.titulo }}">
+        </a>
+        {% else %}
+        <img src="{{ banner.imagen.url }}" class="d-block w-100 rounded-4 shadow-sm" alt="{{ banner.titulo }}">
+        {% endif %}
+        {% if banner.titulo %}
+        <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded-3 p-2">
+          <h5 class="text-white fw-bold">{{ banner.titulo }}</h5>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselBanners" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselBanners" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Siguiente</span>
+    </button>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- =======================
+     HERO PRINCIPAL
+======================= -->
 <header class="hero">
   <div class="container text-center">
-    <!-- Título principal -->
-    <h1 class="mb-3">
-      Deliciosos pasteles para&nbsp;<span style="white-space:nowrap;">ti</span>
-    </h1>
+    <h1 class="mb-3">Deliciosos pasteles para <span style="white-space:nowrap;">ti</span></h1>
 
-    <!-- Botón CTA -->
-    <div class="lead-cta">
-      <a href="{% url 'productos' %}" class="btn btn-cta btn-lg">Ver catálogo</a>
+    <div class="lead-cta mb-4">
+      <a href="{% url 'productos' %}" class="btn btn-cta btn-lg shadow">Ver catálogo</a>
     </div>
 
-    <!-- Ilustraciones -->
     <div class="pastry-wrap d-flex justify-content-center align-items-end gap-4 gap-md-5 flex-wrap">
-      <!-- Cupcake -->
       <img src="{% static 'core/img/carrusel1.png' %}" alt="Cupcake feliz" class="pastry">
-      <!-- Porción de pastel -->
       <img src="{% static 'core/img/carrusel2.png' %}" alt="Porción de pastel feliz" class="pastry">
-      <!-- Donut -->
       <img src="{% static 'core/img/carrusel3.png' %}" alt="Donut feliz" class="pastry">
     </div>
   </div>
-
-  <!-- Curva inferior -->
   <div class="floor"></div>
 </header>
+
+
+<!-- =======================
+     PROMOCIONES ACTIVAS
+======================= -->
+{% if promociones %}
+<section class="promociones py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5 fw-bold" style="color:#4b2c20;">Promociones vigentes</h2>
+    <div class="row justify-content-center">
+      {% for promo in promociones %}
+      <div class="col-md-4 mb-4">
+        <div class="card shadow-sm border-0 rounded-4 h-100">
+          <div class="card-body text-center">
+            <h5 class="fw-bold text-success mb-2">{{ promo.nombre }}</h5>
+            <p class="text-muted mb-3">{{ promo.descripcion }}</p>
+            <p class="fw-bold fs-5">
+              {% if promo.tipo == 'percent' %}
+                {{ promo.valor|floatformat:0 }}% de descuento
+              {% else %}
+                ${{ promo.valor|floatformat:0 }} CLP de descuento
+              {% endif %}
+            </p>
+            <p class="small text-muted">Válido hasta {{ promo.fecha_fin|date:"d/m/Y" }}</p>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+
+<!-- =======================
+     PRODUCTOS DESTACADOS
+======================= -->
+{% if productos %}
+<section class="productos py-5">
+  <div class="container">
+    <h2 class="text-center mb-5 fw-bold" style="color:#4b2c20;">Productos destacados</h2>
+    <div class="row justify-content-center">
+      {% for producto in productos %}
+      <div class="col-md-4 mb-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+          <img src="{{ producto.imagen.url }}" class="card-img-top rounded-top-4" alt="{{ producto.nombre }}">
+          <div class="card-body text-center">
+            <h5 class="fw-bold">{{ producto.nombre }}</h5>
+            {% if producto.precio_con_descuento < producto.precio %}
+              <p class="mb-0 text-muted text-decoration-line-through">${{ producto.precio|floatformat:0 }}</p>
+              <p class="fw-bold text-success fs-5 mb-0">${{ producto.precio_con_descuento|floatformat:0 }}</p>
+              <a href="{% url 'productos' %}" class="btn">Ir al catalogo</a>
+            {% else %}
+              <p class="fw-bold fs-5 mb-0">${{ producto.precio|floatformat:0 }}</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 {% endblock %}

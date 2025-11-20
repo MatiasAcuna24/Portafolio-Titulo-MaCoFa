@@ -121,3 +121,64 @@ footer a {
 footer a:hover {
   text-decoration: underline;
 }
+
+/* contacto */
+.contacto {
+  background-color: #fef9f4;
+}
+
+.card input,
+.card textarea {
+  border-radius: 1rem;
+}
+
+.card label {
+  color: #888;
+}
+
+.card .btn {
+  background-color: #45c3f2;
+  color: white;
+}
+
+.card .btn:hover {
+  background-color: #f4d44c;
+  color: #3b2f2f;
+}
+
+/* Hero */
+.hero {
+  background-color: #fff8e6;
+  padding: 5rem 0 2rem;
+  text-align: center;
+  color: #4b2c20;
+}
+
+/* Carrusel */
+#banner-carrusel img {
+  border-radius: 1rem;
+  max-height: 420px;
+  object-fit: cover;
+}
+
+/* Promociones */
+.promociones .card {
+  background-color: #d5c18d;
+  transition: all 0.3s ease-in-out;
+}
+.promociones .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.1);
+}
+
+.input-group input {
+  border-radius: 999px 0 0 999px;
+}
+.input-group .btn-cta {
+  border-radius: 0 999px 999px 0;
+  background-color: #a4d04f;
+  color: white;
+}
+.input-group .btn-cta:hover {
+  background-color: #8ac244;
+}

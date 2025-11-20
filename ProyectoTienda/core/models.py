@@ -4,6 +4,7 @@ from django.utils.text import slugify
 from django.core.validators import MinValueValidator, MaxValueValidator
 from decimal import Decimal
 from django.conf import settings
+from django.utils import timezone
 
 # Create your models here.
 
@@ -49,6 +50,17 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+    def precio_con_descuento(self):
+        ahora = timezone.now()
+        promo = self.promociones.filter(
+            activo=True,
+            fecha_inicio__lte=ahora,
+            fecha_fin__gte=ahora
+        ).first()
+        if promo:
+            return promo.aplicar(Decimal(self.precio))
+        return self.precio
 
 
 
@@ -81,6 +93,17 @@ class Promocion(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+class PromocionProducto(models.Model):
+    """Relaciona productos con promociones activas."""
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="promocion")
+    promocion = models.ForeignKey(Promocion, on_delete=models.CASCADE, related_name="producto")
+
+    class Meta:
+        db_table = "promocion_producto"
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.promocion.nombre}"
 
 
 class Banner(models.Model):
@@ -93,6 +116,40 @@ class Banner(models.Model):
     class Meta:
         ordering = ["orden"]
 
+class Cupon(models.Model):
+    PORCENTAJE = "percent"
+    FIJO = "fixed"
+    TIPO_CHOICES = [(PORCENTAJE, "Porcentaje"), (FIJO, "Monto fijo")]
+
+    codigo = models.CharField(max_length=20, unique=True)
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default=PORCENTAJE)
+    valor = models.DecimalField(max_digits=8, decimal_places=2)
+    activo = models.BooleanField(default=True)
+    fecha_inicio = models.DateTimeField()
+    fecha_expiracion = models.DateTimeField()
+    uso_maximo = models.PositiveIntegerField(default=1)
+    usos_actuales = models.PositiveIntegerField(default=0)
+
+    def es_valido(self):
+        """Verifica si el cupón está vigente y activo."""
+        ahora = timezone.now()
+        return self.activo and self.fecha_inicio <= ahora <= self.fecha_expiracion and self.usos_actuales < self.uso_maximo
+
+    def aplicar(self, subtotal: Decimal) -> Decimal:
+        """Aplica el descuento al subtotal."""
+        if not self.es_valido():
+            return subtotal
+        if self.tipo == self.PORCENTAJE:
+            pct = max(Decimal("0"), min(self.valor, Decimal("100")))
+            return subtotal * (Decimal("1") - pct / Decimal("100"))
+        return max(Decimal("0"), subtotal - self.valor)
+
+    def registrar_uso(self):
+        self.usos_actuales += 1
+        self.save()
+
+    def __str__(self):
+        return f"{self.codigo} ({self.valor}{'%' if self.tipo == self.PORCENTAJE else 'CLP'})"
 
 # ---------------------------
 # DIRECCIONES / ZONAS DESPACHO
@@ -231,6 +288,9 @@ class Pedido(models.Model):
     costo_despacho = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     total = models.DecimalField(max_digits=12, decimal_places=2)
     notas_cliente = models.TextField(blank=True)
+    cupon = models.ForeignKey(
+        'Cupon', on_delete=models.SET_NULL, null=True, blank=True, related_name='pedidos'
+    )
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 

@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 
 urlpatterns = [
     path('',index, name='index'),
+    path('contacto/', contacto, name='contacto'),
 
     #usuarios_admin
     path("admin/usuarios/", views.listar_usuarios, name="listar_usuarios"),
@@ -19,6 +20,7 @@ urlpatterns = [
 
     #productos
     path('productos',productos, name='productos'),
+    path("productos/<int:producto_id>/", detalle_producto, name="detalle_producto"),
     #producto admin
     path("producto/crear/", crear_producto, name="crear_producto"),
     path("producto/<int:producto_id>/eliminar/", eliminar_producto, name="eliminar_producto"),

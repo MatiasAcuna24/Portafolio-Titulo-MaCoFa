@@ -27,7 +27,42 @@ from io import BytesIO
 # Create your views here.
 
 def index(request):
-    return render(request, 'core/index.html')
+    ahora = timezone.now()
+    banners = Banner.objects.filter(activo=True).order_by("orden")
+    promociones = Promocion.objects.filter(
+        activo=True,
+        fecha_inicio__lte=ahora,
+        fecha_fin__gte=ahora
+    )
+    productos = Producto.objects.filter(activo=True)[:6]  # muestra algunos destacados
+
+    context = {
+        "banners": banners,
+        "promociones": promociones,
+        "productos": productos,
+    }
+    return render(request, "core/index.html", context)
+
+def contacto(request):
+    contactos = Contacto.objects.all()
+
+    data ={
+        'contactos': contactos,
+    }
+
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        email = request.POST.get('email')
+        mensaje = request.POST.get('mensaje')
+
+        # Aquí puedes agregar la lógica para enviar el mensaje por correo o guardarlo en la base de datos
+        contacto = Contacto(nombre=nombre, email=email, mensaje=mensaje)
+        contacto.save()
+
+        messages.success(request, 'Tu mensaje ha sido enviado con éxito.')
+        return redirect('contacto')  # Redirige a la misma página o a otra que desees
+
+    return render(request, 'core/contacto.html',data)
 
 @login_required
 def perfil_usuario(request):
@@ -120,6 +155,27 @@ def productos(request):
     return render(request, 'catalogo/productos.html', data)
 
 
+def detalle_producto(request, producto_id):
+    producto = get_object_or_404(
+        Producto.objects.select_related("categoria").prefetch_related("promociones"),
+        id=producto_id
+    )
+
+    # Calculamos la promoción activa para enviarla al template
+    ahora = timezone.now()
+    promo = (
+        producto.promociones
+        .filter(activo=True, fecha_inicio__lte=ahora, fecha_fin__gte=ahora)
+        .first()
+    )
+
+    context = {
+        "producto": producto,
+        "promo": promo,  # 👈 Enviamos la promoción activa al template
+    }
+    return render(request, "catalogo/detalle_producto.html", context)
+
+
 #producto admin
 @login_required
 @user_passes_test(lambda u: u.is_staff)
@@ -197,11 +253,31 @@ def agregar_al_carrito(request, producto_id):
 @login_required
 def ver_carrito(request):
     carrito, _ = Carrito.objects.get_or_create(usuario=request.user)
-    
     items = carrito.items.select_related('producto').all()
 
-    subtotal = sum(item.producto.precio * item.cantidad for item in items)
-    descuento = 0  # podrías calcularlo si aplicas promociones
+    ahora = timezone.now()
+
+    subtotal = Decimal(0)
+    descuento = Decimal(0)
+
+    for item in items:
+        producto = item.producto
+        cantidad = item.cantidad
+
+        # Precio base sin descuento
+        subtotal += producto.precio * cantidad
+
+        # Buscar si tiene promoción activa
+        promo = producto.promociones.filter(
+            activo=True,
+            fecha_inicio__lte=ahora,
+            fecha_fin__gte=ahora
+        ).first()
+
+        if promo:
+            precio_desc = promo.aplicar(Decimal(producto.precio))
+            descuento += (producto.precio - precio_desc) * cantidad
+
     total = subtotal - descuento
 
     return render(request, 'carrito/carrito.html', {
@@ -252,18 +328,35 @@ def vaciar_carrito(request):
 @login_required
 @require_http_methods(["GET", "POST"])
 def checkout(request, pedido_id=None):
+    """Vista principal de checkout con soporte de cupones y promociones."""
     carrito = get_object_or_404(Carrito, usuario=request.user)
-    items = carrito.items.select_related('producto').all()
+    items = carrito.items.select_related("producto").all()
 
+    # Si viene un pedido ya generado → mostrar confirmación
     if pedido_id:
         pedido = get_object_or_404(Pedido, id=pedido_id, usuario=request.user)
-        return render(request, 'carrito/pedido_confirmado.html', {'pedido': pedido})
+        return render(request, "carrito/pedido_confirmado.html", {"pedido": pedido})
 
+    # Validar que el carrito tenga ítems
     if not items:
         messages.error(request, "Tu carrito está vacío.")
-        return redirect('ver_carrito')
+        return redirect("ver_carrito")
 
+    # ----------------------------------------------------------------------
+    # 1️⃣ Calcular subtotal con posibles descuentos de promociones
+    # ----------------------------------------------------------------------
+    subtotal_sin_desc = sum(item.producto.precio * item.cantidad for item in items)
+    subtotal = sum(item.producto.precio_con_descuento() * item.cantidad for item in items)
+
+    descuento_promocion = subtotal_sin_desc - subtotal
+    descuento_cupon = Decimal("0")
+    cupon_aplicado = None
+
+    # ----------------------------------------------------------------------
+    # 2️⃣ Procesar formulario POST (dirección y cupón)
+    # ----------------------------------------------------------------------
     if request.method == "POST":
+        # 📦 Datos dirección
         calle = request.POST.get("calle")
         numero = request.POST.get("numero")
         comuna_id = request.POST.get("comuna")
@@ -271,16 +364,20 @@ def checkout(request, pedido_id=None):
         region_id = request.POST.get("region")
         referencia = request.POST.get("referencia", "")
         zona_id = request.POST.get("zona")
+        codigo_cupon = request.POST.get("cupon", "").strip()
 
+        # Validación de campos mínimos
         if not all([calle, comuna_id, region_id, zona_id]):
             messages.error(request, "Todos los campos obligatorios deben ser completados.")
-            return redirect('checkout')
+            return redirect("checkout")
 
-        comuna = Comuna.objects.get(id=comuna_id)
-        provincia = Provincia.objects.get(id=provincia_id) if provincia_id else comuna.provincia
-        region = Region.objects.get(id=region_id)
+        # 🧭 Cargar relaciones
+        comuna = get_object_or_404(Comuna, id=comuna_id)
+        provincia = get_object_or_404(Provincia, id=provincia_id) if provincia_id else comuna.provincia
+        region = get_object_or_404(Region, id=region_id)
         zona = ZonaDespacho.objects.filter(id=zona_id).first()
 
+        # 🏠 Crear dirección rápida
         direccion = Direccion.objects.create(
             usuario=request.user,
             alias="Dirección rápida",
@@ -291,25 +388,49 @@ def checkout(request, pedido_id=None):
             region=region,
             referencia=referencia,
             activa=True,
-            zona=zona
+            zona=zona,
         )
 
-        subtotal = sum(item.producto.precio * item.cantidad for item in items)
-        descuento = 0
-        costo_despacho = zona.costo if zona else 0
-        total = subtotal - descuento + costo_despacho
+        # ----------------------------------------------------------------------
+        # 3️⃣ Aplicar cupón si corresponde
+        # ----------------------------------------------------------------------
+        if codigo_cupon:
+            try:
+                cupon = Cupon.objects.get(codigo__iexact=codigo_cupon)
+                if cupon.es_valido():
+                    subtotal_con_cupon = cupon.aplicar(subtotal)
+                    descuento_cupon = subtotal - subtotal_con_cupon
+                    subtotal = subtotal_con_cupon
+                    cupon_aplicado = cupon
+                    messages.success(request, f"¡Cupón '{codigo_cupon}' aplicado con éxito!")
+                else:
+                    messages.warning(request, "El cupón no es válido o ha expirado.")
+            except Cupon.DoesNotExist:
+                messages.warning(request, "El cupón ingresado no existe.")
 
+        # ----------------------------------------------------------------------
+        # 4️⃣ Calcular totales finales
+        # ----------------------------------------------------------------------
+        costo_despacho = zona.costo if zona else 0
+        total = subtotal + Decimal(costo_despacho)
+        descuento_total = descuento_promocion + descuento_cupon
+
+        # ----------------------------------------------------------------------
+        # 5️⃣ Crear pedido y sus ítems
+        # ----------------------------------------------------------------------
         numero_pedido = f"PED-{timezone.now().strftime('%Y%m%d')}-{get_random_string(6).upper()}"
+
         pedido = Pedido.objects.create(
             usuario=request.user,
             direccion_envio=direccion,
-            subtotal=subtotal,
-            descuento=descuento,
+            subtotal=subtotal_sin_desc,
+            descuento=descuento_total,
             costo_despacho=costo_despacho,
             total=total,
-            estado='pendiente',
+            estado="pendiente",
             zona=zona,
             numero=numero_pedido,
+            cupon=cupon_aplicado if cupon_aplicado else None,
         )
 
         for item in items:
@@ -317,37 +438,44 @@ def checkout(request, pedido_id=None):
                 pedido=pedido,
                 producto=item.producto,
                 cantidad=item.cantidad,
-                precio_unitario=item.producto.precio
+                precio_unitario=item.producto.precio_con_descuento(),
             )
+            # Actualizar stock
             item.producto.stock -= item.cantidad
             item.producto.save()
 
+        # Registrar uso del cupón (si existía)
+        if cupon_aplicado:
+            cupon_aplicado.registrar_uso()
+
+        # Vaciar carrito
         carrito.items.all().delete()
 
+        # Enviar confirmación
         if request.user.email:
             send_order_confirmation(request.user, pedido)
 
         messages.success(request, "¡Pedido creado exitosamente!")
         return redirect("pedido_confirmado", pedido_id=pedido.id)
 
-    else:
-        subtotal = sum(item.producto.precio * item.cantidad for item in items)
-        descuento = 0
-        zonas = ZonaDespacho.objects.all().order_by("costo")
-        regiones = Region.objects.all().order_by("nombre")
-        provincias = Provincia.objects.all().order_by("nombre")
-        comunas = Comuna.objects.all().order_by("nombre")
+    # ----------------------------------------------------------------------
+    # 6️⃣ GET: mostrar formulario de checkout
+    # ----------------------------------------------------------------------
+    zonas = ZonaDespacho.objects.all().order_by("costo")
+    regiones = Region.objects.all().order_by("nombre")
+    provincias = Provincia.objects.all().order_by("nombre")
+    comunas = Comuna.objects.all().order_by("nombre")
 
-        return render(request, 'carrito/checkout.html', {
-            'items': items,
-            'subtotal': subtotal,
-            'descuento': descuento,
-            'total': subtotal - descuento,
-            'zonas': zonas,
-            'regiones': regiones,
-            'provincias': provincias,
-            'comunas': comunas,
-        })
+    return render(request, "carrito/checkout.html", {
+        "items": items,
+        "subtotal": subtotal,
+        "descuento": descuento_promocion,
+        "total": subtotal,
+        "zonas": zonas,
+        "regiones": regiones,
+        "provincias": provincias,
+        "comunas": comunas,
+    })
 
 def cargar_provincias(request):
     region_id = request.GET.get("region_id")
@@ -546,10 +674,10 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, "Has iniciado sesión correctamente.")
-            return redirect("index")  # cambia "home" por tu vista de inicio
+            return redirect("index")  # o la vista principal de tu sitio
         else:
             messages.error(request, "Nombre de usuario o contraseña incorrectos.")
-            redirect("login")
+            return redirect("login")  # ✅ agregado el 'return'
 
     return render(request, "registration/login.html")
 

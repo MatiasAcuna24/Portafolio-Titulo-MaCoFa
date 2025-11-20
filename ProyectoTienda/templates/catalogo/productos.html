@@ -14,6 +14,24 @@
   }
   .chip.active { background:#a4d04f; color:#fff; border-color:#8ac244; }
   .chip:hover { text-decoration:none; filter:brightness(0.98); }
+
+  /* Promociones */
+  .promo-card {
+    background:#fffdf5;
+    border:1px solid #eee;
+    border-radius:1rem;
+    padding:1.2rem;
+    text-align:center;
+    transition:all 0.3s ease-in-out;
+  }
+  .promo-card:hover { transform:translateY(-3px); box-shadow:0 6px 14px rgba(0,0,0,0.1); }
+  .promo-card h5 { color:#6fbf3e; font-weight:700; }
+  .promo-card p { margin:0; color:#4b2c20; }
+  .promo-card small { color:#a8a8a8; }
+
+  /* Precio */
+  .prod-price { font-size:1.2rem; }
+  .text-success { color:#6fbf3e!important; }
 </style>
 {% endblock %}
 
@@ -22,7 +40,34 @@
   <div class="container">
     <hr>
 
-    <!-- 🧁 Título y botón nuevo producto -->
+    <!-- 🎁 Promociones activas -->
+    {% if promociones %}
+    <div class="mb-5">
+      <h2 class="text-center fw-bold mb-4" style="color:#4b2c20;">Promociones vigentes</h2>
+      <div class="row justify-content-center g-3">
+        {% for promo in promociones %}
+        <div class="col-md-3 col-sm-6">
+          <div class="promo-card">
+            <h5>{{ promo.nombre }}</h5>
+            <p>{{ promo.descripcion }}</p>
+            <p class="fw-bold mt-2">
+              {% if promo.tipo == 'percent' %}
+                {{ promo.valor|floatformat:0 }}% de descuento
+              {% else %}
+                ${{ promo.valor|floatformat:0 }} CLP de descuento
+              {% endif %}
+            </p>
+            {% if promo.fecha_fin %}
+              <small>Válido hasta {{ promo.fecha_fin|date:"d/m/Y" }}</small>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- 🧁 Título -->
     <div class="d-flex justify-content-between align-items-center mb-5">
       <h1 class="cat-title m-0">🍰 Catálogo de productos</h1>
 
@@ -33,7 +78,7 @@
       {% endif %}
     </div>
 
-    <!-- 🔎 Filtros (chips + búsqueda) -->
+    <!-- 🔎 Filtros -->
     <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
       <a href="{% url 'productos' %}"
          class="chip {% if not categoria_seleccionada %}active{% endif %}">
@@ -62,7 +107,7 @@
       <article class="prod-card shadow-sm">
         <div class="prod-inner">
           
-          <!-- 📸 Imagen del producto -->
+          <!-- 📸 Imagen -->
           <div class="prod-media">
             {% if p.imagen %}
               <img src="{{ p.imagen.url }}" alt="{{ p.nombre }}">
@@ -71,40 +116,42 @@
             {% endif %}
           </div>
 
-          <!-- 📦 Contenido del producto -->
+          <!-- 📦 Info -->
           <div class="prod-body">
             <span class="badge bg-secondary mb-2">{{ p.categoria.nombre }}</span>
             <h3 class="prod-name">{{ p.nombre }}</h3>
-            <div class="prod-price">${{ p.precio|floatformat:0 }}</div>
 
-            <!-- 🛒 Grupo de acciones -->
+            <!-- 💸 Precio con descuento -->
+            <p class="prod-price">
+              {% if p.precio_con_descuento < p.precio %}
+                <span class="text-muted text-decoration-line-through">${{ p.precio|floatformat:0 }}</span>
+                <span class="fw-bold text-success ms-1">${{ p.precio_con_descuento|floatformat:0 }}</span>
+              {% else %}
+                <span class="fw-bold">${{ p.precio|floatformat:0 }}</span>
+              {% endif %}
+            </p>
+
+            <!-- 🛒 Acciones -->
             <div class="mt-3 d-flex flex-column gap-2">
-
-              <!-- 🛒 Añadir al carrito -->
-              <form method="post" action="{% url 'agregar_al_carrito' p.id %}">
-                {% csrf_token %}
-                <button class="btn-add w-100" type="submit">
-                  <i class="bi bi-cart-plus"></i> Añadir al carrito
-                </button>
-              </form>
+              <a href="{% url 'detalle_producto' p.id %}" class="btn btn-add w-100">
+                Ver detalle
+              </a>
 
               {% if request.user.is_staff %}
-              <!-- ✏️ y 🗑️ solo visibles para admin -->
               <div class="d-flex gap-2 justify-content-between">
-
-                <!-- ✏️ Actualizar producto -->
+                <!-- ✏️ Editar -->
                 <a href="{% url 'actualizar_producto' p.id %}" class="btn-add w-50 text-center" style="text-decoration:none;">
                   <i class="bi bi-pencil-square"></i> Actualizar
                 </a>
 
-                <!-- 🗑️ Eliminar producto -->
-                <form action="{% url 'eliminar_producto' p.id %}" method="post" class="w-50" onsubmit="return confirm('¿Estás seguro de eliminar este producto?');">
+                <!-- 🗑️ Eliminar -->
+                <form action="{% url 'eliminar_producto' p.id %}" method="post" class="w-50"
+                      onsubmit="return confirm('¿Estás seguro de eliminar este producto?');">
                   {% csrf_token %}
                   <button type="submit" class="btn-add w-100" style="background-color:#d9534f;">
                     <i class="bi bi-trash"></i> Eliminar
                   </button>
                 </form>
-
               </div>
               {% endif %}
             </div>
@@ -115,8 +162,6 @@
         <p class="text-center">No hay productos disponibles{% if categoria_seleccionada %} en esta categoría{% endif %}{% if q %} para “{{ q }}”{% endif %}.</p>
       {% endfor %}
     </div>
-
   </div>
 </section>
 {% endblock %}
-

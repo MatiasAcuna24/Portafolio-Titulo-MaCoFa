@@ -37,6 +37,25 @@
     border-radius: 999px; padding:.25rem .6rem;
     font-size: .8rem; font-weight:600;
   }
+
+  /* Cupones */
+  .cupon-box {
+    border: 1px dashed #d9d9d9;
+    border-radius: 10px;
+    padding: 1rem;
+    background-color: #fffdf6;
+  }
+  .cupon-box input {
+    border-radius: 999px 0 0 999px;
+  }
+  .cupon-box button {
+    border-radius: 0 999px 999px 0;
+    background-color: #a4d04f;
+    color: white;
+  }
+  .cupon-box button:hover {
+    background-color: #8ac244;
+  }
 </style>
 {% endblock %}
 
@@ -109,6 +128,21 @@
               </select>
             </div>
 
+            <!-- 🎟️ Cupón de descuento -->
+            <div class="cupon-box mb-4">
+              <h5 class="fw-bold mb-3">¿Tienes un cupón de descuento?</h5>
+              <div class="input-group">
+                <input type="text" class="form-control" name="cupon" placeholder="Ingresa tu código de cupón" value="{{ cupon_codigo|default:'' }}">
+                <button type="submit" class="btn btn-cta">Aplicar</button>
+              </div>
+
+              {% if cupon_aplicado %}
+                <div class="mt-3 text-success fw-bold">
+                  Cupón <span class="text-uppercase">{{ cupon_aplicado.codigo }}</span> aplicado correctamente.
+                </div>
+              {% endif %}
+            </div>
+
             <div class="text-center">
               <button type="submit" class="btn-cta btn-lg w-100">
                 <i class="bi bi-check2-circle"></i> Confirmar pedido
@@ -127,18 +161,25 @@
             {% for item in items %}
               <li class="checkout-item d-flex justify-content-between">
                 <span>{{ item.producto.nombre }} (x{{ item.cantidad }})</span>
-                <strong>CLP {{ item.producto.precio|floatformat:0 }}</strong>
+                {% if item.producto.precio_con_descuento < item.producto.precio %}
+                  <span>
+                    <span class="text-muted text-decoration-line-through small">CLP {{ item.producto.precio|floatformat:0 }}</span>
+                    <strong class="text-success"> CLP {{ item.producto.precio_con_descuento|floatformat:0 }}</strong>
+                  </span>
+                {% else %}
+                  <strong>CLP {{ item.producto.precio|floatformat:0 }}</strong>
+                {% endif %}
               </li>
             {% endfor %}
           </ul>
 
           <div class="totals">
             <p><span>Subtotal:</span> <strong>CLP {{ subtotal|floatformat:0 }}</strong></p>
-            <p><span>Descuento:</span> <strong>CLP {{ descuento|floatformat:0 }}</strong></p>
-            {% if costo_despacho > 0 %}
-              <p><span>Despacho ({{ zona_seleccionada.nombre }}):</span> <strong>CLP {{ costo_despacho|floatformat:0 }}</strong></p>
-            {% else %}
-              <p><span>Despacho:</span> <strong>Selecciona una zona</strong></p>
+            {% if descuento > 0 %}
+              <p class="text-success"><span>Descuento aplicado:</span> <strong>-CLP {{ descuento|floatformat:0 }}</strong></p>
+            {% endif %}
+            {% if costo_despacho %}
+              <p><span>Despacho:</span> <strong>CLP {{ costo_despacho|floatformat:0 }}</strong></p>
             {% endif %}
             <p class="fs-5 fw-bold"><span>Total:</span> <strong>CLP {{ total|floatformat:0 }}</strong></p>
           </div>

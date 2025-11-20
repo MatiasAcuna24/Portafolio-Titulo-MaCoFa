@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="cart-wrap">
+<section class="cart-wrap py-5">
   <div class="container cart-surface">
     <!-- 🛒 Título -->
     <h1 class="cart-title text-center">🧁 Carro de Compras</h1>
@@ -27,7 +27,14 @@
           <!-- Nombre y precio -->
           <div class="ci-info">
             <h3 class="ci-name">{{ it.producto.nombre }}</h3>
-            <div class="ci-price">CLP {{ it.producto.precio|floatformat:0 }}</div>
+            <div class="ci-price">
+              {% if it.producto.precio_con_descuento < it.producto.precio %}
+                <span class="old">CLP {{ it.producto.precio|floatformat:0 }}</span>
+                <span class="new">CLP {{ it.producto.precio_con_descuento|floatformat:0 }}</span>
+              {% else %}
+                CLP {{ it.producto.precio|floatformat:0 }}
+              {% endif %}
+            </div>
           </div>
 
           <!-- Cantidad y acciones -->
@@ -69,7 +76,7 @@
 
           <div class="row-line">
             <span>Descuento:</span>
-            <strong>-CLP {{ descuento|floatformat:0 }}</strong>
+            <strong class="text-success">-CLP {{ descuento|floatformat:0 }}</strong>
           </div>
 
           <div class="row-line total">
