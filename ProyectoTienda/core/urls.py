@@ -11,7 +11,6 @@ urlpatterns = [
     path("admin/usuarios/", views.listar_usuarios, name="listar_usuarios"),
     path("admin/usuarios/<int:user_id>/cambiar-rol/", views.cambiar_rol_usuario, name="cambiar_rol_usuario"),
 
-
     #perfil
     path('perfil/', perfil_usuario, name='perfil_usuario'),
     path("perfil/admin/", perfil_admin, name="perfil_admin"),
@@ -26,7 +25,6 @@ urlpatterns = [
     path("producto/<int:producto_id>/eliminar/", eliminar_producto, name="eliminar_producto"),
     path("producto/<int:producto_id>/actualizar/", actualizar_producto, name="actualizar_producto"),
 
-
     #carrito
     path('agregar/<int:producto_id>/', agregar_al_carrito, name='agregar_al_carrito'),
     path('carrito/', ver_carrito, name='ver_carrito'),
@@ -34,9 +32,6 @@ urlpatterns = [
     path('carrito/eliminar/<int:item_id>/', eliminar_item, name='eliminar_item'),
     path('carrito/vaciar/', vaciar_carrito, name='vaciar_carrito'),
     
-
-
-
     #Pedidos
     path('checkout/', checkout, name='checkout'),
     path('ajax/cargar_provincias/', cargar_provincias, name='cargar_provincias'),
@@ -44,8 +39,6 @@ urlpatterns = [
     path("checkout/<int:pedido_id>/", pedido_confirmado, name="pedido_confirmado"),
     path("mis-pedidos/", ver_pedidos, name="ver_pedidos"),
     
-
-
     #Pedidos personalizados
     path("pedidos/<int:pedido_id>/personalizado/", pedido_personalizado, name="personalizado_editar"),
 
@@ -54,7 +47,6 @@ urlpatterns = [
     path("pedido/<int:pedido_id>/eliminar/", eliminar_pedido, name="eliminar_pedido"),
     path('admin/reporte_pedidos_excel/', exportar_pedidos_excel, name='reporte_pedidos_excel'),
     path('admin/reporte_pedidos_pdf/', exportar_pedidos_pdf, name='reporte_pedidos_pdf'),
-
 
     #Registro y login
     path('registro/', registro, name='registro'),

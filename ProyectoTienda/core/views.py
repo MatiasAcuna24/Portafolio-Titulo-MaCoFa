@@ -329,6 +329,7 @@ def vaciar_carrito(request):
 @require_http_methods(["GET", "POST"])
 def checkout(request, pedido_id=None):
     """Vista principal de checkout con soporte de cupones y promociones."""
+
     carrito = get_object_or_404(Carrito, usuario=request.user)
     items = carrito.items.select_related("producto").all()
 
@@ -337,13 +338,13 @@ def checkout(request, pedido_id=None):
         pedido = get_object_or_404(Pedido, id=pedido_id, usuario=request.user)
         return render(request, "carrito/pedido_confirmado.html", {"pedido": pedido})
 
-    # Validar que el carrito tenga ítems
+    # Validar carrito vacío
     if not items:
         messages.error(request, "Tu carrito está vacío.")
         return redirect("ver_carrito")
 
     # ----------------------------------------------------------------------
-    # 1️⃣ Calcular subtotal con posibles descuentos de promociones
+    # 1️⃣ Calcular subtotal con promociones
     # ----------------------------------------------------------------------
     subtotal_sin_desc = sum(item.producto.precio * item.cantidad for item in items)
     subtotal = sum(item.producto.precio_con_descuento() * item.cantidad for item in items)
@@ -352,11 +353,64 @@ def checkout(request, pedido_id=None):
     descuento_cupon = Decimal("0")
     cupon_aplicado = None
 
+    # Pre-cargar datos para GET o refrescos
+    zonas = ZonaDespacho.objects.all().order_by("costo")
+    regiones = Region.objects.all().order_by("nombre")
+    provincias = Provincia.objects.all().order_by("nombre")
+    comunas = Comuna.objects.all().order_by("nombre")
+
     # ----------------------------------------------------------------------
-    # 2️⃣ Procesar formulario POST (dirección y cupón)
+    # 2️⃣ POST → puede ser aplicar cupón o confirmar pedido
     # ----------------------------------------------------------------------
     if request.method == "POST":
-        # 📦 Datos dirección
+
+        codigo_cupon = request.POST.get("cupon", "").strip()
+
+        # 🟢 SOLO APLICAR CUPÓN — NO CREA PEDIDO
+        if "aplicar_cupon" in request.POST:
+
+            if codigo_cupon:
+                try:
+                    cupon = Cupon.objects.get(codigo__iexact=codigo_cupon)
+
+                    if cupon.es_valido():
+                        subtotal_con_cupon = cupon.aplicar(subtotal)
+                        descuento_cupon = subtotal - subtotal_con_cupon
+                        subtotal = subtotal_con_cupon
+                        cupon_aplicado = cupon
+
+                        messages.success(request, f"¡Cupón '{codigo_cupon}' aplicado con éxito!")
+
+                        # Recargar checkout mostrando descuento
+                        return render(request, "carrito/checkout.html", {
+                            "items": items,
+                            "subtotal": subtotal,
+                            "descuento_promocion": descuento_promocion,
+                            "descuento_cupon": descuento_cupon,
+                            "total": subtotal,
+                            "zonas": zonas,
+                            "regiones": regiones,
+                            "provincias": provincias,
+                            "comunas": comunas,
+                            "cupon_aplicado": cupon,
+                            "cupon_codigo": codigo_cupon,
+                        })
+
+                    else:
+                        messages.warning(request, "El cupón no es válido o ha expirado.")
+
+                except Cupon.DoesNotExist:
+                    messages.warning(request, "El código ingresado no existe.")
+
+            else:
+                messages.warning(request, "Debes ingresar un cupón válido.")
+
+            return redirect("checkout")
+
+        # 🟣 SI NO ES aplicar cupón → es CONFIRMAR pedido
+        # ------------------------------------------------------------------
+        # 3️⃣ Dirección
+        # ------------------------------------------------------------------
         calle = request.POST.get("calle")
         numero = request.POST.get("numero")
         comuna_id = request.POST.get("comuna")
@@ -364,20 +418,16 @@ def checkout(request, pedido_id=None):
         region_id = request.POST.get("region")
         referencia = request.POST.get("referencia", "")
         zona_id = request.POST.get("zona")
-        codigo_cupon = request.POST.get("cupon", "").strip()
 
-        # Validación de campos mínimos
         if not all([calle, comuna_id, region_id, zona_id]):
-            messages.error(request, "Todos los campos obligatorios deben ser completados.")
+            messages.error(request, "Faltan campos obligatorios.")
             return redirect("checkout")
 
-        # 🧭 Cargar relaciones
         comuna = get_object_or_404(Comuna, id=comuna_id)
         provincia = get_object_or_404(Provincia, id=provincia_id) if provincia_id else comuna.provincia
         region = get_object_or_404(Region, id=region_id)
         zona = ZonaDespacho.objects.filter(id=zona_id).first()
 
-        # 🏠 Crear dirección rápida
         direccion = Direccion.objects.create(
             usuario=request.user,
             alias="Dirección rápida",
@@ -391,9 +441,9 @@ def checkout(request, pedido_id=None):
             zona=zona,
         )
 
-        # ----------------------------------------------------------------------
-        # 3️⃣ Aplicar cupón si corresponde
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        # 4️⃣ Re-aplicar cupón por seguridad
+        # ------------------------------------------------------------------
         if codigo_cupon:
             try:
                 cupon = Cupon.objects.get(codigo__iexact=codigo_cupon)
@@ -402,22 +452,21 @@ def checkout(request, pedido_id=None):
                     descuento_cupon = subtotal - subtotal_con_cupon
                     subtotal = subtotal_con_cupon
                     cupon_aplicado = cupon
-                    messages.success(request, f"¡Cupón '{codigo_cupon}' aplicado con éxito!")
                 else:
                     messages.warning(request, "El cupón no es válido o ha expirado.")
             except Cupon.DoesNotExist:
                 messages.warning(request, "El cupón ingresado no existe.")
 
-        # ----------------------------------------------------------------------
-        # 4️⃣ Calcular totales finales
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        # 5️⃣ Totales
+        # ------------------------------------------------------------------
         costo_despacho = zona.costo if zona else 0
         total = subtotal + Decimal(costo_despacho)
         descuento_total = descuento_promocion + descuento_cupon
 
-        # ----------------------------------------------------------------------
-        # 5️⃣ Crear pedido y sus ítems
-        # ----------------------------------------------------------------------
+        # ------------------------------------------------------------------
+        # 6️⃣ Crear pedido
+        # ------------------------------------------------------------------
         numero_pedido = f"PED-{timezone.now().strftime('%Y%m%d')}-{get_random_string(6).upper()}"
 
         pedido = Pedido.objects.create(
@@ -440,18 +489,14 @@ def checkout(request, pedido_id=None):
                 cantidad=item.cantidad,
                 precio_unitario=item.producto.precio_con_descuento(),
             )
-            # Actualizar stock
             item.producto.stock -= item.cantidad
             item.producto.save()
 
-        # Registrar uso del cupón (si existía)
         if cupon_aplicado:
             cupon_aplicado.registrar_uso()
 
-        # Vaciar carrito
         carrito.items.all().delete()
 
-        # Enviar confirmación
         if request.user.email:
             send_order_confirmation(request.user, pedido)
 
@@ -459,23 +504,21 @@ def checkout(request, pedido_id=None):
         return redirect("pedido_confirmado", pedido_id=pedido.id)
 
     # ----------------------------------------------------------------------
-    # 6️⃣ GET: mostrar formulario de checkout
+    # 7️⃣ GET normal
     # ----------------------------------------------------------------------
-    zonas = ZonaDespacho.objects.all().order_by("costo")
-    regiones = Region.objects.all().order_by("nombre")
-    provincias = Provincia.objects.all().order_by("nombre")
-    comunas = Comuna.objects.all().order_by("nombre")
-
     return render(request, "carrito/checkout.html", {
         "items": items,
         "subtotal": subtotal,
-        "descuento": descuento_promocion,
+        "descuento_promocion": descuento_promocion,
+        "descuento_cupon": 0,
         "total": subtotal,
         "zonas": zonas,
         "regiones": regiones,
         "provincias": provincias,
         "comunas": comunas,
+        "cupon_aplicado": None,
     })
+
 
 def cargar_provincias(request):
     region_id = request.GET.get("region_id")
